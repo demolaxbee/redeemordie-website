@@ -1,0 +1,165 @@
+.about-page {
+  padding: var(--spacing-xl) 0;
+  min-height: 100vh;
+  background-color: var(--color-background);
+}
+
+/* Hero Section */
+.about-hero {
+  text-align: center;
+  padding: var(--spacing-xl) 0;
+  margin-bottom: var(--spacing-xl);
+}
+
+.about-hero h1 {
+  font-size: 4rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-primary);
+}
+
+.hero-subtitle {
+  font-size: 1.5rem;
+  color: var(--color-text);
+}
+
+/* Brand Story Section */
+.brand-story {
+  padding: var(--spacing-xl) 0;
+  background-color: var(--color-secondary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.story-content {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.story-content h2 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary);
+}
+
+.story-content p {
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Mission & Values Section */
+.mission-values {
+  padding: var(--spacing-xl) 0;
+  margin-bottom: var(--spacing-xl);
+}
+
+.values-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.values-content h2 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary);
+}
+
+.values-content > p {
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  margin-bottom: var(--spacing-xl);
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-xl);
+}
+
+.value-item {
+  padding: var(--spacing-lg);
+  background-color: var(--color-secondary);
+  border-radius: 8px;
+  transition: transform var(--transition-fast);
+}
+
+.value-item:hover {
+  transform: translateY(-10px);
+}
+
+.value-item h3 {
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
+}
+
+.value-item p {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* Team Section */
+.team-section {
+  padding: var(--spacing-xl) 0;
+  background-color: var(--color-secondary);
+}
+
+.team-content {
+  text-align: center;
+}
+
+.team-content h2 {
+  margin-bottom: var(--spacing-xl);
+  color: var(--color-primary);
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-xl);
+}
+
+.team-member {
+  text-align: center;
+}
+
+.member-image {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto var(--spacing-md);
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.team-member h3 {
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
+}
+
+.team-member p {
+  color: var(--color-text-secondary);
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .about-hero h1 {
+    font-size: 3rem;
+  }
+
+  .values-grid,
+  .team-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+
+  .value-item {
+    padding: var(--spacing-md);
+  }
+
+  .member-image {
+    width: 150px;
+    height: 150px;
+  }
+} 
