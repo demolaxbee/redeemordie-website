@@ -24,7 +24,7 @@ A modern, responsive e-commerce website for the RedeemOrDie clothing brand, buil
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/redeemordie-website.git
+git clone https://github.com/demolaxbee/redeemordie-website.git
 cd redeemordie-website
 ```
 
@@ -40,21 +40,14 @@ npm start
 
 ## 🎨 Design System
 
-### Colors
-- Primary: #FF0000 (Red)
-- Secondary: #000000 (Black)
-- Accent: #FFFFFF (White)
-- Text: #FFFFFF, #CCCCCC
-
 ### Typography
 - Primary Font: Montserrat
 - Secondary Font: Bebas Neue
 
 ## 📱 Pages
 
-1. Home/Landing Page
-2. Shop/Products Page
-3. Product Detail Page
+1. Shop/Landing Page
+3. Product Detail Page / catalog
 4. About Page
 5. Contact Page
 6. Cart Page
@@ -82,11 +75,3 @@ src/
 ## 📄 License
 
 MIT License - feel free to use this project as a template for your own work.
-
-## 👥 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request 
