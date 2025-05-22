@@ -1,101 +1,68 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { db } from '../firebase';
-import { collection, onSnapshot } from 'firebase/firestore';
-
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  stock: number;
-  imageUrl: string;
-  category: 'Hoodies'
-}
-
-const categories = ['All', 'Hoodies', 'T-Shirts', 'Pants', 'Accessories'];
+import { fetchProducts, Product } from '../utils/airtable';
 
 const Shop: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [sortBy, setSortBy] = useState('newest');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'products'), (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
-      setLoading(false);
-    });
-    return () => unsub();
+    const loadProducts = async () => {
+      try {
+        const data = await fetchProducts();
+        setProducts(data);
+      } catch (err) {
+        setError('Failed to load products. Please try again later.');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
   }, []);
 
-  const filteredProducts = products.filter(product => 
-    selectedCategory === 'All' || 
-    product.category.toLowerCase() === selectedCategory.toLowerCase()
-  );
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="shop-page">
-      <div className="container">
-        <h1></h1>
-        
-        {/* Filters */}
-        <div className="shop-filters">
-          <div className="category-filters">
-            {categories.map(category => (
-              <button
-                key={category}
-                className={`filter-button ${selectedCategory === category ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(category)}
-              >
-                {category}
-              </button>
-            ))}
-          </div>
-          
-          <select 
-            className="sort-select"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
+    <div className="container mx-auto px-4 py-12">
+      <h1 className="text-3xl font-bold mb-10 text-center">Shop</h1>
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {products.map((product) => (
+          <Link
+            to={`/product/${product.id}`}
+            key={product.id}
+            className="group block bg-white rounded-lg shadow-sm overflow-hidden transition-transform duration-200 hover:scale-105"
+            style={{ minHeight: 340 }}
           >
-            <option value="newest">Newest</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-          </select>
-        </div>
-
-        {loading ? (
-          <div style={{ textAlign: 'center', margin: '4rem 0' }}>Loading products...</div>
-        ) : products.length === 0 ? (
-          <div style={{ textAlign: 'center', margin: '4rem 0' }}>No products found.</div>
-        ) : (
-          <div className="product-grid">
-            {filteredProducts.map(product => (
-              <motion.div
-                key={product.id}
-                className="product-card"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                whileHover={{ y: -10 }}
-              >
-                <div className="product-image">
-                  {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  ) : (
-                    <div className="placeholder-image"></div>
-                  )}
-                </div>
-                <h3>{product.name}</h3>
-                <p className="price">${product.price.toFixed(2)}</p>
-                <Link to={`/product/${product.id}`} className="button">
-                  View Details
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-        )}
+            <div className="w-full h-64 bg-gray-100 flex items-center justify-center overflow-hidden">
+              <img
+                src={product.imageUrl || '/placeholder-image.jpg'}
+                alt={product.name}
+                className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
+                style={{ maxHeight: 256 }}
+              />
+            </div>
+            <div className="p-4 flex flex-col items-start">
+              <h2 className="text-lg font-semibold mb-1 text-black">{product.name}</h2>
+              <span className="text-base font-medium text-gray-700">${product.price} CAD</span>
+            </div>
+          </Link>
+        ))}
       </div>
     </div>
   );

@@ -3,6 +3,8 @@ import { auth, db, storage } from '../firebase';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 interface Product {
   id?: string;
@@ -16,9 +18,10 @@ interface Product {
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [user, setUser] = useState<User | null>(null);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const { login, resetPassword, error: authError, loading } = useAuth();
+  const navigate = useNavigate();
 
   // Product state
   const [products, setProducts] = useState<Product[]>([]);
@@ -30,30 +33,39 @@ const AdminLogin: React.FC = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+      if (firebaseUser) {
+        navigate('/admin/dashboard');
+      }
     });
     return () => unsubscribe();
-  }, []);
+  }, [navigate]);
 
   // Fetch products in real time
   useEffect(() => {
-    if (!user) return;
     const unsub = onSnapshot(collection(db, 'products'), (snapshot) => {
       setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
     });
     return () => unsub();
-  }, [user]);
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
+      await login(email, password);
+      navigate('/admin/dashboard');
+    } catch (err) {
+      // Error is handled by the auth context
     }
-    setLoading(false);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await resetPassword(email);
+      setResetSent(true);
+    } catch (err) {
+      // Error is handled by the auth context
+    }
   };
 
   const handleLogout = async () => {
@@ -116,124 +128,103 @@ const AdminLogin: React.FC = () => {
     }
   };
 
-  if (user) {
+  if (resetSent) {
     return (
-      <div style={{ maxWidth: 700, margin: '4rem auto', textAlign: 'center' }}>
-        <h2>Admin Dashboard</h2>
-        <p>Welcome, {user.email}</p>
-        <button className="button" onClick={handleLogout}>Logout</button>
-        <div style={{ margin: '2rem 0', textAlign: 'left' }}>
-          <h3>{editId ? 'Edit Product' : 'Add New Product'}</h3>
-          <form onSubmit={handleProductSubmit} style={{ display: 'grid', gap: 16, maxWidth: 400 }}>
-            <input
-              type="text"
-              placeholder="Name"
-              value={form.name}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              required
-            />
-            <input
-              type="number"
-              placeholder="Price"
-              value={form.price}
-              onChange={e => setForm(f => ({ ...f, price: Number(e.target.value) }))}
-              required
-              min={0}
-              step={0.01}
-            />
-            <textarea
-              placeholder="Description"
-              value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              required
-              rows={3}
-            />
-            <input
-              type="number"
-              placeholder="Stock"
-              value={form.stock}
-              onChange={e => setForm(f => ({ ...f, stock: Number(e.target.value) }))}
-              required
-              min={0}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={e => setForm(f => ({ ...f, imageFile: e.target.files?.[0] || null }))}
-            />
-            <button className="button" type="submit" disabled={formLoading}>
-              {formLoading ? 'Saving...' : editId ? 'Update Product' : 'Add Product'}
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8">
+          <div>
+            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+              Check Your Email
+            </h2>
+            <p className="mt-2 text-center text-sm text-gray-600">
+              We've sent password reset instructions to {email}
+            </p>
+          </div>
+          <div className="text-center">
+            <button
+              onClick={() => {
+                setIsResetMode(false);
+                setResetSent(false);
+              }}
+              className="text-indigo-600 hover:text-indigo-500"
+            >
+              Back to login
             </button>
-            {editId && (
-              <button type="button" className="button" style={{ background: '#888' }} onClick={() => { setEditId(null); setForm({ name: '', price: 0, description: '', stock: 0, imageFile: null }); }}>Cancel</button>
-            )}
-          </form>
-        </div>
-        <div style={{ marginTop: 32, textAlign: 'left' }}>
-          <h3>Products</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
-            <thead>
-              <tr style={{ background: '#f7f7f7' }}>
-                <th style={{ padding: 8, border: '1px solid #eaeaea' }}>Image</th>
-                <th style={{ padding: 8, border: '1px solid #eaeaea' }}>Name</th>
-                <th style={{ padding: 8, border: '1px solid #eaeaea' }}>Price</th>
-                <th style={{ padding: 8, border: '1px solid #eaeaea' }}>Stock</th>
-                <th style={{ padding: 8, border: '1px solid #eaeaea' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map(product => (
-                <tr key={product.id}>
-                  <td style={{ padding: 8, border: '1px solid #eaeaea', textAlign: 'center' }}>
-                    {product.imageUrl && <img src={product.imageUrl} alt={product.name} style={{ width: 60, height: 60, objectFit: 'contain' }} />}
-                  </td>
-                  <td style={{ padding: 8, border: '1px solid #eaeaea' }}>{product.name}</td>
-                  <td style={{ padding: 8, border: '1px solid #eaeaea' }}>${product.price.toFixed(2)}</td>
-                  <td style={{ padding: 8, border: '1px solid #eaeaea' }}>{product.stock}</td>
-                  <td style={{ padding: 8, border: '1px solid #eaeaea' }}>
-                    <button className="button" style={{ fontSize: 12, padding: '4px 10px', marginRight: 8 }} onClick={() => handleEdit(product)}>Edit</button>
-                    <button className="button" style={{ fontSize: 12, padding: '4px 10px', background: '#c00' }} onClick={() => handleDelete(product.id!)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: '4rem auto', padding: 24, border: '1px solid #eaeaea', borderRadius: 8, background: '#fff' }}>
-      <h2 style={{ textAlign: 'center', marginBottom: 24 }}>Admin Login</h2>
-      <form onSubmit={handleLogin}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            required
-            autoComplete="username"
-          />
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            {isResetMode ? 'Reset Password' : 'Admin Login'}
+          </h2>
         </div>
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
-        </div>
-        {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
-        <button className="button" type="submit" disabled={loading} style={{ width: '100%' }}>
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
+        <form className="mt-8 space-y-6" onSubmit={isResetMode ? handleResetPassword : handleLogin}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            {!isResetMode && (
+              <div>
+                <label htmlFor="password" className="sr-only">
+                  Password
+                </label>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+            )}
+          </div>
+
+          {authError && (
+            <div className="text-red-500 text-sm text-center">{authError}</div>
+          )}
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              {loading ? 'Processing...' : isResetMode ? 'Send Reset Link' : 'Sign in'}
+            </button>
+          </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => setIsResetMode(!isResetMode)}
+              className="text-indigo-600 hover:text-indigo-500"
+            >
+              {isResetMode ? 'Back to login' : 'Forgot your password?'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

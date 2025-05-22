@@ -17,6 +17,7 @@
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
     "@types/react-router-dom": "^5.3.3",
+    "airtable": "^0.12.2",
     "firebase": "^11.7.3",
     "framer-motion": "^12.12.1",
     "react": "^19.1.0",
