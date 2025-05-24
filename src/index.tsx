@@ -10,6 +10,7 @@ import './styles/product-detail.css';
 import './styles/about.css';
 import './styles/contact.css';
 import './styles/cart.css';
+import './styles/admin.css';
 import reportWebVitals from './reportWebVitals';
 
 // Import fonts
