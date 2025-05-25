@@ -4,6 +4,8 @@
   color: #fff;
   font-size: 12px;
   letter-spacing: 1px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
 .footer-container {
@@ -13,7 +15,6 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 15px 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-left {
@@ -36,9 +37,7 @@
 }
 
 .footer-bottom {
-  text-align: center;
-  padding: 15px;
-  font-size: 11px;
+  display: none;
 }
 
 /* Mobile Styles */

@@ -16,16 +16,17 @@
   position: sticky;
   top: 0;
   width: 100%;
-  background-color: #fff;
+  background-color: #000;
   z-index: 1000;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #222;
   padding: 15px 0;
   font-family: 'Montserrat', sans-serif;
+  color: #fff;
 }
 
 /* Make navbar transparent on homepage */
 .home .navbar {
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.8);
   border-bottom: none;
   position: absolute;
 }
@@ -51,7 +52,7 @@
   font-size: 24px;
   font-weight: 700;
   text-decoration: none;
-  color: #000;
+  color: #fff;
   letter-spacing: 1px;
   font-family: 'Bebas Neue', sans-serif;
 }
@@ -63,7 +64,7 @@
 
 .navbar-main-links a {
   text-decoration: none;
-  color: #000;
+  color: #fff;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 1px;
@@ -73,7 +74,7 @@
 
 .navbar-main-links a:hover,
 .navbar-main-links a.active {
-  color: #555;
+  color: #ccc;
 }
 
 .navbar-main-links a:after {
@@ -83,7 +84,7 @@
   height: 1px;
   bottom: -2px;
   left: 0;
-  background-color: #000;
+  background-color: #fff;
   transition: width 0.3s;
 }
 
@@ -104,14 +105,14 @@
   border: none;
   cursor: pointer;
   padding: 5px;
-  color: #000;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .icon-btn:hover {
-  color: #555;
+  color: #ccc;
 }
 
 .cart-btn {
@@ -122,8 +123,8 @@
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: #000;
-  color: #fff;
+  background-color: #fff;
+  color: #000;
   font-size: 10px;
   width: 16px;
   height: 16px;

@@ -6,6 +6,7 @@ const Shop: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -22,46 +23,96 @@ const Shop: React.FC = () => {
     loadProducts();
   }, []);
 
+  const toggleFilters = () => {
+    setShowFilters(!showFilters);
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      <div className="loading-container">
+        <div className="spinner"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-red-500">{error}</div>
+      <div className="error-container">
+        <div className="error-message">{error}</div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-10 text-center">Shop</h1>
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+    <div className="shop-page">
+      <div className="shop-header">
+        <h1>SHOP ALL</h1>
+        <div className="breadcrumb">
+          <Link to="/">Home</Link>
+          <span> / </span>
+          <span>Shop All</span>
+        </div>
+      </div>
+
+      <div className="shop-controls">
+        <button className="filter-toggle" onClick={toggleFilters}>
+          FILTER
+        </button>
+        <div className="items-count">{products.length} items</div>
+      </div>
+
+      {showFilters && (
+        <div className="filter-panel">
+          <div className="filter-section">
+            <h3>SORT</h3>
+            <select className="sort-select">
+              <option value="featured">Featured</option>
+              <option value="best-selling">Best selling</option>
+              <option value="a-z">Alphabetically, A-Z</option>
+              <option value="z-a">Alphabetically, Z-A</option>
+              <option value="price-low">Price, low to high</option>
+              <option value="price-high">Price, high to low</option>
+              <option value="date-old">Date, old to new</option>
+              <option value="date-new">Date, new to old</option>
+            </select>
+          </div>
+          
+          <div className="filter-section">
+            <h3>AVAILABILITY</h3>
+            <div className="filter-checkbox">
+              <input type="checkbox" id="in-stock" />
+              <label htmlFor="in-stock">In stock ({products.length})</label>
+            </div>
+          </div>
+          
+          <div className="filter-section price-filter">
+            <h3>PRICE</h3>
+            <div className="price-inputs">
+              <input type="number" placeholder="From $" min="0" />
+              <input type="number" placeholder="To $" min="0" />
+            </div>
+            <button className="apply-btn">APPLY</button>
+          </div>
+          
+          <button className="see-results-btn">SEE RESULTS</button>
+        </div>
+      )}
+
+      <div className="products-grid">
         {products.map((product) => (
-          <Link
-            to={`/product/${product.id}`}
-            key={product.id}
-            className="group block bg-white rounded-lg shadow-sm overflow-hidden transition-transform duration-200 hover:scale-105"
-            style={{ minHeight: 340 }}
-          >
-            <div className="w-full h-64 bg-gray-100 flex items-center justify-center overflow-hidden">
-              <img
-                src={product.imageUrl || '/placeholder-image.jpg'}
-                alt={product.name}
-                className="object-cover w-full h-full transition-transform duration-200 group-hover:scale-105"
-                style={{ maxHeight: 256 }}
-              />
-            </div>
-            <div className="p-4 flex flex-col items-start">
-              <h2 className="text-lg font-semibold mb-1 text-black">{product.name}</h2>
-              <span className="text-base font-medium text-gray-700">${product.price} CAD</span>
-            </div>
-          </Link>
+          <div className="product-card" key={product.id}>
+            <Link to={`/product/${product.id}`} className="product-link">
+              <div className="product-image">
+                <img
+                  src={product.imageUrl || '/placeholder-image.jpg'}
+                  alt={product.name}
+                  className="product-img"
+                />
+              </div>
+              <h2 className="product-title">{product.name}</h2>
+              <p className="product-price">${product.price}</p>
+            </Link>
+          </div>
         ))}
       </div>
     </div>
