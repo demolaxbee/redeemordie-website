@@ -43,7 +43,12 @@ const Home: React.FC = () => {
             transition={{ duration: 0.8 }}
             className="brand-name"
           >
-            RedeemOrDie
+            <img
+              src="/redeemOrDie-logo.PNG"
+              alt="RedeemOrDie Logo"
+              className="navbar-logo-img"
+              style={{ height: '200px', width: 'auto' }}
+            />
           </motion.h1>
         </div>
 
