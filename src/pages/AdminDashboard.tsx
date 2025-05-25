@@ -1,17 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchProducts, Product } from '../utils/airtable';
+import { fetchProducts, Product, addProduct, updateProduct, deleteProduct } from '../utils/airtable';
 import ProductCard from '../components/ProductCard';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { auth, db, storage } from '../firebase';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDoc, getDocs } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import '../styles/admin.css';
 
 interface ProductFormData {
+  id?: string;
   name: string;
   price: number;
   description: string;
   category: string;
   imageUrl: string;
+  stock: number;
 }
 
 const AdminDashboard: React.FC = () => {
@@ -25,8 +30,14 @@ const AdminDashboard: React.FC = () => {
     price: 0,
     description: '',
     category: '',
-    imageUrl: ''
+    imageUrl: '',
+    stock: 0
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [formSubmitting, setFormSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -59,44 +70,129 @@ const AdminDashboard: React.FC = () => {
   const handleEdit = (product: Product) => {
     // Populate form with product data
     setFormData({
+      id: product.id,
       name: product.name,
       price: product.price,
       description: product.description || '',
       category: product.category || '',
-      imageUrl: product.imageUrl || ''
+      imageUrl: product.imageUrl || '',
+      stock: product.stock || 0
     });
+    setImagePreview(product.imageUrl || '');
+    setIsEditing(true);
     setShowAddForm(true);
   };
 
-  const handleDelete = (productId: string) => {
-    // TODO: Implement delete functionality
-    console.log('Delete product:', productId);
-    // After successful delete, refresh the product list
-    setProducts(products.filter(product => product.id !== productId));
+  const handleDelete = async (productId: string) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        setLoading(true);
+        // Delete from Firestore
+        await deleteDoc(doc(db, 'products', productId));
+        // Delete from Airtable
+        await deleteProduct(productId);
+        // Update UI
+        setProducts(products.filter(product => product.id !== productId));
+        alert('Product deleted successfully');
+      } catch (err) {
+        console.error('Error deleting product:', err);
+        alert('Failed to delete product. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === 'price' ? parseFloat(value) : value
+      [name]: name === 'price' || name === 'stock' ? parseFloat(value) : value
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // TODO: Implement save functionality
-    console.log('Save product:', formData);
-    // After successful save, close form and refresh products
-    setShowAddForm(false);
-    // Reset form
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImageFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const resetForm = () => {
     setFormData({
       name: '',
       price: 0,
       description: '',
       category: '',
-      imageUrl: ''
+      imageUrl: '',
+      stock: 0
     });
+    setImageFile(null);
+    setImagePreview('');
+    setIsEditing(false);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormSubmitting(true);
+    
+    try {
+      let finalImageUrl = formData.imageUrl;
+      
+      // If there's a new image file, upload it
+      if (imageFile) {
+        const storageRef = ref(storage, `products/${Date.now()}_${imageFile.name}`);
+        await uploadBytes(storageRef, imageFile);
+        finalImageUrl = await getDownloadURL(storageRef);
+      }
+      
+      const productData = {
+        ...formData,
+        imageUrl: finalImageUrl,
+        price: Number(formData.price),
+        stock: Number(formData.stock)
+      };
+      
+      if (isEditing && formData.id) {
+        // Update existing product
+        // Update in Firestore
+        await updateDoc(doc(db, 'products', formData.id), productData);
+        // Update in Airtable
+        await updateProduct(formData.id, productData);
+        
+        // Update local state
+        setProducts(products.map(p => p.id === formData.id ? { ...p, ...productData } : p));
+        alert('Product updated successfully');
+      } else {
+        // Add new product
+        // Add to Firestore
+        const docRef = await addDoc(collection(db, 'products'), productData);
+        const newProduct = { ...productData, id: docRef.id };
+        
+        // Add to Airtable
+        await addProduct(newProduct);
+        
+        // Update local state
+        setProducts([...products, newProduct]);
+        alert('Product added successfully');
+      }
+      
+      // Reset and close form
+      resetForm();
+      setShowAddForm(false);
+    } catch (err) {
+      console.error('Error saving product:', err);
+      alert('Failed to save product. Please try again.');
+    } finally {
+      setFormSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -164,7 +260,10 @@ const AdminDashboard: React.FC = () => {
               <h2>Manage Products</h2>
               <button 
                 className="add-btn"
-                onClick={() => setShowAddForm(true)}
+                onClick={() => {
+                  resetForm();
+                  setShowAddForm(true);
+                }}
               >
                 Add New Product
               </button>
@@ -172,13 +271,20 @@ const AdminDashboard: React.FC = () => {
 
             <div className="products-grid">
               {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isAdmin
-                  onEdit={() => handleEdit(product)}
-                  onDelete={() => handleDelete(product.id)}
-                />
+                <div className="admin-product-card" key={product.id}>
+                  <div className="admin-product-image">
+                    <img src={product.imageUrl || '/placeholder-image.jpg'} alt={product.name} />
+                  </div>
+                  <div className="admin-product-info">
+                    <div className="admin-product-name">{product.name}</div>
+                    <div className="admin-product-price">${product.price}</div>
+                    <div className="admin-product-stock">Stock: {product.stock || 0}</div>
+                    <div className="admin-product-actions">
+                      <button className="edit-btn" onClick={() => handleEdit(product)}>Edit</button>
+                      <button className="delete-btn" onClick={() => handleDelete(product.id)}>Delete</button>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           </motion.div>
@@ -211,7 +317,7 @@ const AdminDashboard: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Product Form Modal */}
+      {/* Enhanced Product Form */}
       <AnimatePresence>
         {showAddForm && (
           <motion.div 
@@ -219,7 +325,7 @@ const AdminDashboard: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setShowAddForm(false)}
+            onClick={() => !formSubmitting && setShowAddForm(false)}
           >
             <motion.div 
               className="modal-content"
@@ -229,80 +335,142 @@ const AdminDashboard: React.FC = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="modal-header">
-                <h2>Add/Edit Product</h2>
-                <button className="close-modal" onClick={() => setShowAddForm(false)}>×</button>
+                <h2>{isEditing ? 'Edit Product' : 'Add New Product'}</h2>
+                <button 
+                  className="close-modal" 
+                  onClick={() => !formSubmitting && setShowAddForm(false)}
+                  disabled={formSubmitting}
+                >×</button>
               </div>
               
               <form onSubmit={handleSubmit} className="product-form">
-                <div className="form-group">
-                  <label htmlFor="name">Product Name</label>
-                  <input 
-                    type="text" 
-                    id="name" 
-                    name="name" 
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="price">Price</label>
-                  <input 
-                    type="number" 
-                    id="price" 
-                    name="price" 
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    step="0.01"
-                    min="0"
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="category">Category</label>
-                  <select 
-                    id="category" 
-                    name="category" 
-                    value={formData.category}
-                    onChange={handleInputChange}
-                  >
-                    <option value="">Select Category</option>
-                    <option value="shirts">Shirts</option>
-                    <option value="hoodies">Hoodies</option>
-                    <option value="accessories">Accessories</option>
-                  </select>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="imageUrl">Image URL</label>
-                  <input 
-                    type="text" 
-                    id="imageUrl" 
-                    name="imageUrl" 
-                    value={formData.imageUrl}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="description">Description</label>
-                  <textarea 
-                    id="description" 
-                    name="description" 
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    rows={4}
-                  />
+                <div className="product-form-container">
+                  <div className="form-section">
+                    <div className="form-group">
+                      <label htmlFor="name">Product Name</label>
+                      <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        disabled={formSubmitting}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="price">Price ($)</label>
+                      <input 
+                        type="number" 
+                        id="price" 
+                        name="price" 
+                        value={formData.price}
+                        onChange={handleInputChange}
+                        step="0.01"
+                        min="0"
+                        disabled={formSubmitting}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="stock">Stock Quantity</label>
+                      <input 
+                        type="number" 
+                        id="stock" 
+                        name="stock" 
+                        value={formData.stock}
+                        onChange={handleInputChange}
+                        min="0"
+                        disabled={formSubmitting}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="category">Category</label>
+                      <select 
+                        id="category" 
+                        name="category" 
+                        value={formData.category}
+                        onChange={handleInputChange}
+                        disabled={formSubmitting}
+                      >
+                        <option value="">Select Category</option>
+                        <option value="shirts">Shirts</option>
+                        <option value="hoodies">Hoodies</option>
+                        <option value="accessories">Accessories</option>
+                      </select>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="description">Description</label>
+                      <textarea 
+                        id="description" 
+                        name="description" 
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        rows={4}
+                        disabled={formSubmitting}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="form-section">
+                    <div className="form-group">
+                      <label>Product Image</label>
+                      <div className="image-preview">
+                        {imagePreview ? (
+                          <img src={imagePreview} alt="Preview" />
+                        ) : (
+                          <span>No image selected</span>
+                        )}
+                      </div>
+                      
+                      <div className="file-input-wrapper">
+                        <input 
+                          type="file"
+                          ref={fileInputRef}
+                          className="file-input"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          disabled={formSubmitting}
+                        />
+                        <span className="file-input-label">Choose Image</span>
+                      </div>
+                    </div>
+                    
+                    <div className="form-group">
+                      <label htmlFor="imageUrl">Or Image URL</label>
+                      <input 
+                        type="text" 
+                        id="imageUrl" 
+                        name="imageUrl" 
+                        value={formData.imageUrl}
+                        onChange={handleInputChange}
+                        disabled={formSubmitting}
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="form-actions">
-                  <button type="button" className="cancel-btn" onClick={() => setShowAddForm(false)}>
+                  <button 
+                    type="button" 
+                    className="cancel-btn" 
+                    onClick={() => setShowAddForm(false)}
+                    disabled={formSubmitting}
+                  >
                     Cancel
                   </button>
-                  <button type="submit" className="save-btn">
-                    Save Product
+                  <button 
+                    type="submit" 
+                    className="save-btn"
+                    disabled={formSubmitting}
+                  >
+                    {formSubmitting ? 'Saving...' : 'Save Product'}
                   </button>
                 </div>
               </form>

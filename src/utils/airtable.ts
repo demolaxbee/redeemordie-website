@@ -38,3 +38,111 @@ export interface Product {
     }
   };
   
+export const addProduct = async (product: Product): Promise<Product> => {
+  try {
+    // Format the data for Airtable
+    const fields = {
+      Name: product.name,
+      Price: product.price,
+      Category: product.category,
+      Description: product.description,
+      Stock: product.stock,
+      // Airtable expects image URLs to be in a specific format for attachment fields
+      // This might need adjustment based on your Airtable configuration
+      Image: [{ url: product.imageUrl }]
+    };
+
+    const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fields }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Airtable error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    
+    return {
+      id: data.id,
+      name: data.fields.Name,
+      price: data.fields.Price,
+      category: data.fields.Category,
+      description: data.fields.Description,
+      stock: data.fields.Stock,
+      imageUrl: data.fields.Image?.[0]?.url || '',
+    };
+  } catch (error) {
+    console.error('Error adding product to Airtable:', error);
+    throw error;
+  }
+};
+
+export const updateProduct = async (id: string, product: Partial<Product>): Promise<Product> => {
+  try {
+    // Format the data for Airtable
+    const fields: any = {};
+    
+    if (product.name !== undefined) fields.Name = product.name;
+    if (product.price !== undefined) fields.Price = product.price;
+    if (product.category !== undefined) fields.Category = product.category;
+    if (product.description !== undefined) fields.Description = product.description;
+    if (product.stock !== undefined) fields.Stock = product.stock;
+    if (product.imageUrl !== undefined) fields.Image = [{ url: product.imageUrl }];
+
+    const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${id}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ fields }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Airtable error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    
+    return {
+      id: data.id,
+      name: data.fields.Name,
+      price: data.fields.Price,
+      category: data.fields.Category,
+      description: data.fields.Description,
+      stock: data.fields.Stock,
+      imageUrl: data.fields.Image?.[0]?.url || '',
+    };
+  } catch (error) {
+    console.error('Error updating product in Airtable:', error);
+    throw error;
+  }
+};
+
+export const deleteProduct = async (id: string): Promise<void> => {
+  try {
+    const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Airtable error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+  } catch (error) {
+    console.error('Error deleting product from Airtable:', error);
+    throw error;
+  }
+};
+  

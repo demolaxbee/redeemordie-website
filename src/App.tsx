@@ -1,6 +1,10 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './styles/global.css';
+import './styles/navbar.css';
+import './styles/footer.css';
+import './styles/shop.css';
+import './styles/admin.css';
 
 // Pages
 import Home from './pages/Home';
@@ -24,8 +28,8 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="admin-loading">
+        <div className="spinner"></div>
       </div>
     );
   }

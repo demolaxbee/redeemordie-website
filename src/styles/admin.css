@@ -11,7 +11,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 30px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #333;
   padding-bottom: 20px;
 }
 
@@ -31,12 +31,12 @@
 
 .admin-user-info span {
   font-size: 14px;
-  color: #666;
+  color: #ccc;
 }
 
 .logout-btn {
-  background-color: #000;
-  color: #fff;
+  background-color: #fff;
+  color: #000;
   border: none;
   padding: 8px 15px;
   font-size: 14px;
@@ -45,13 +45,13 @@
 }
 
 .logout-btn:hover {
-  background-color: #333;
+  background-color: #ccc;
 }
 
 /* Tabs */
 .admin-tabs {
   display: flex;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #333;
   margin-bottom: 30px;
 }
 
@@ -64,16 +64,16 @@
   letter-spacing: 1px;
   cursor: pointer;
   position: relative;
-  color: #666;
+  color: #ccc;
   transition: color 0.3s;
 }
 
 .tab-btn:hover {
-  color: #000;
+  color: #fff;
 }
 
 .tab-btn.active {
-  color: #000;
+  color: #fff;
   font-weight: 500;
 }
 
@@ -84,7 +84,7 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background-color: #000;
+  background-color: #fff;
 }
 
 /* Content Area */
@@ -103,11 +103,12 @@
   font-size: 18px;
   font-weight: 500;
   margin: 0;
+  color: #fff;
 }
 
 .add-btn {
-  background-color: #000;
-  color: #fff;
+  background-color: #fff;
+  color: #000;
   border: none;
   padding: 10px 15px;
   font-size: 14px;
@@ -116,7 +117,7 @@
 }
 
 .add-btn:hover {
-  background-color: #333;
+  background-color: #ccc;
 }
 
 /* Products Grid */
@@ -138,9 +139,9 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0, 0, 0, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
-  border-top-color: #000;
+  border-top-color: #fff;
   animation: spin 1s ease-in-out infinite;
 }
 
@@ -151,7 +152,7 @@
 }
 
 .error-message {
-  color: #d32f2f;
+  color: #ff6b6b;
   text-align: center;
 }
 
@@ -162,7 +163,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -170,12 +171,13 @@
 }
 
 .modal-content {
-  background-color: #fff;
+  background-color: #111;
   width: 90%;
   max-width: 500px;
   border-radius: 4px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   overflow: hidden;
+  border: 1px solid #333;
 }
 
 .modal-header {
@@ -183,13 +185,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #333;
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 18px;
   font-weight: 500;
+  color: #fff;
 }
 
 .close-modal {
@@ -197,7 +200,7 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: #ccc;
 }
 
 /* Product Form */
@@ -213,7 +216,7 @@
   display: block;
   margin-bottom: 5px;
   font-size: 14px;
-  color: #333;
+  color: #ccc;
 }
 
 .form-group input,
@@ -221,7 +224,9 @@
 .form-group textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #444;
   border-radius: 4px;
   font-size: 14px;
   font-family: inherit;
@@ -240,8 +245,9 @@
 }
 
 .cancel-btn {
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #444;
   padding: 10px 15px;
   font-size: 14px;
   cursor: pointer;
@@ -249,8 +255,8 @@
 }
 
 .save-btn {
-  background-color: #000;
-  color: #fff;
+  background-color: #fff;
+  color: #000;
   border: none;
   padding: 10px 15px;
   font-size: 14px;
@@ -260,7 +266,252 @@
 }
 
 .save-btn:hover {
+  background-color: #ccc;
+}
+
+/* Admin Login Page */
+.admin-login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.admin-login-box {
+  background-color: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 400px;
+  padding: 30px;
+}
+
+.admin-login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.admin-login-header h2 {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.admin-login-form {
+  margin-top: 20px;
+}
+
+.form-input {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.form-input input {
+  width: 100%;
+  padding: 12px 15px;
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-input input::placeholder {
+  color: #777;
+}
+
+.form-input input:focus {
+  border-color: #666;
+  outline: none;
+}
+
+.error-text {
+  color: #ff6b6b;
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.submit-btn {
+  width: 100%;
+  background-color: #fff;
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: #ccc;
+}
+
+.submit-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.forgot-password {
+  text-align: center;
+}
+
+.forgot-password button {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.forgot-password button:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Product Management Page */
+.product-management {
+  border: 1px solid #333;
+  background-color: #111;
+  border-radius: 4px;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.product-management h3 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.product-form-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.form-section {
+  flex: 1;
+}
+
+.image-preview {
+  width: 100%;
+  height: 200px;
+  background-color: #222;
+  border: 1px dashed #444;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.file-input-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.file-input {
+  position: absolute;
+  font-size: 100px;
+  opacity: 0;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+}
+
+.file-input-label {
+  display: inline-block;
+  padding: 8px 15px;
   background-color: #333;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+/* Product Card in Admin */
+.admin-product-card {
+  background-color: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.admin-product-image {
+  height: 200px;
+  overflow: hidden;
+}
+
+.admin-product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-product-info {
+  padding: 15px;
+}
+
+.admin-product-name {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.admin-product-price {
+  font-size: 14px;
+  color: #ccc;
+  margin-bottom: 10px;
+}
+
+.admin-product-stock {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 15px;
+}
+
+.admin-product-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.edit-btn, .delete-btn {
+  padding: 8px 15px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background-color: #333;
+  color: #fff;
+}
+
+.delete-btn {
+  background-color: #d32f2f;
+  color: #fff;
 }
 
 /* Responsive Styles */
@@ -283,6 +534,10 @@
   
   .products-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  .product-form-container {
+    grid-template-columns: 1fr;
   }
 }
 

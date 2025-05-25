@@ -5,6 +5,7 @@ import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot } fr
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import '../styles/admin.css';
 
 interface Product {
   id?: string;
@@ -130,24 +131,17 @@ const AdminLogin: React.FC = () => {
 
   if (resetSent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
-          <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Check Your Email
-            </h2>
-            <p className="mt-2 text-center text-sm text-gray-600">
-              We've sent password reset instructions to {email}
-            </p>
+      <div className="admin-login-container">
+        <div className="admin-login-box">
+          <div className="admin-login-header">
+            <h2>Check Your Email</h2>
+            <p>We've sent password reset instructions to {email}</p>
           </div>
-          <div className="text-center">
-            <button
-              onClick={() => {
-                setIsResetMode(false);
-                setResetSent(false);
-              }}
-              className="text-indigo-600 hover:text-indigo-500"
-            >
+          <div className="forgot-password">
+            <button onClick={() => {
+              setIsResetMode(false);
+              setResetSent(false);
+            }}>
               Back to login
             </button>
           </div>
@@ -157,68 +151,54 @@ const AdminLogin: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isResetMode ? 'Reset Password' : 'Admin Login'}
-          </h2>
+    <div className="admin-login-container">
+      <div className="admin-login-box">
+        <div className="admin-login-header">
+          <h2>{isResetMode ? 'Reset Password' : 'Admin Login'}</h2>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={isResetMode ? handleResetPassword : handleLogin}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
+        <form className="admin-login-form" onSubmit={isResetMode ? handleResetPassword : handleLogin}>
+          <div className="form-input">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          
+          {!isResetMode && (
+            <div className="form-input">
               <input
-                id="email"
-                name="email"
-                type="email"
+                id="password"
+                name="password"
+                type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-            {!isResetMode && (
-              <div>
-                <label htmlFor="password" className="sr-only">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-            )}
-          </div>
-
-          {authError && (
-            <div className="text-red-500 text-sm text-center">{authError}</div>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {loading ? 'Processing...' : isResetMode ? 'Send Reset Link' : 'Sign in'}
-            </button>
-          </div>
+          {authError && (
+            <div className="error-text">{authError}</div>
+          )}
 
-          <div className="text-center">
+          <button
+            type="submit"
+            disabled={loading}
+            className="submit-btn"
+          >
+            {loading ? 'Processing...' : isResetMode ? 'Send Reset Link' : 'Sign in'}
+          </button>
+
+          <div className="forgot-password">
             <button
               type="button"
               onClick={() => setIsResetMode(!isResetMode)}
-              className="text-indigo-600 hover:text-indigo-500"
             >
               {isResetMode ? 'Back to login' : 'Forgot your password?'}
             </button>
