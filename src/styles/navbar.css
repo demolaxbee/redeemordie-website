@@ -137,7 +137,7 @@
 /* Mobile menu button */
 .mobile-menu-btn {
   display: none;
-  background: none;
+  background: rgb(181, 24, 24);
   border: none;
   cursor: pointer;
   width: 30px;
