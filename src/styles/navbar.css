@@ -23,6 +23,13 @@
   font-family: 'Montserrat', sans-serif;
 }
 
+/* Make navbar transparent on homepage */
+.home .navbar {
+  background-color: transparent;
+  border-bottom: none;
+  position: absolute;
+}
+
 .navbar-container {
   display: flex;
   justify-content: space-between;

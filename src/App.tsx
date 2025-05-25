@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import './styles/global.css';
 
 // Pages
+import Home from './pages/Home';
 import Shop from './pages/Shop';
 import ProductDetail from './pages/ProductDetail';
 import About from './pages/About';
@@ -40,8 +41,8 @@ const App: React.FC = () => {
           <Navbar />
           <main>
             <Routes>
-              <Route path="/" element={<Shop />} />
-              <Route path="/shop" element={<Navigate to="/" replace />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/shop" element={<Shop />} />
               <Route path="/product/:id" element={<ProductDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
