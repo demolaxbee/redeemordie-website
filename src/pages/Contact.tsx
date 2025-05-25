@@ -56,26 +56,26 @@ const Contact: React.FC = () => {
             <h2>Contact Information</h2>
             <div className="info-item">
               <h3>Email</h3>
-              <p>info@redeemordie.com</p>
+              <p>reedeemordie66@gmail.com</p>
             </div>
             <div className="info-item">
               <h3>Phone</h3>
-              <p>+1 (555) 123-4567</p>
+              <p>+1 (306) 716-3574</p>
             </div>
             <div className="info-item">
               <h3>Address</h3>
               <p>
-                123 Street Name<br />
-                City, State 12345<br />
-                United States
+                1015 13th Street East<br />
+                Saskatoon, Saskatchewan S7H0B8<br />
+                Canada
               </p>
             </div>
             <div className="info-item">
               <h3>Social Media</h3>
               <div className="social-links">
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
-                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer">TikTok</a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">Twitter</a>
+                <a href="https://www.instagram.com/redeemordie" target="_blank" rel="noopener noreferrer">Instagram</a>
+                <a href="https://www.tiktok.com/@redeemordieclub" target="_blank" rel="noopener noreferrer">TikTok</a>
+                <a href="https://x.com/redeemordie1?s=11" target="_blank" rel="noopener noreferrer">X</a>
               </div>
             </div>
           </motion.div>
