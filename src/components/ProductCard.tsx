@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Product } from '../utils/airtable';
 import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
 
 interface ProductCardProps {
   product: Product;
@@ -15,17 +16,22 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onDelete, 
   isAdmin = false 
 }) => {
+  const { addToCart } = useCart();
+
   if (isAdmin) {
     // Admin view is now handled directly in AdminDashboard
     return null;
   }
   
+  
+
+
   return (
     <div className="product-card">
       <Link to={`/product/${product.id}`} className="product-link">
         <div className="product-image">
           <img
-            src={product.imageUrl || '/placeholder-image.jpg'}
+            src={product.imageUrls[0] || '/placeholder-image.jpg'}
             alt={product.name}
             className="product-img"
           />
@@ -33,6 +39,15 @@ const ProductCard: React.FC<ProductCardProps> = ({
         <h2 className="product-title">{product.name}</h2>
         <p className="product-price">${product.price.toFixed(2)}</p>
       </Link>
+      <button 
+        className="add-to-cart-btn"
+        onClick={(e) => {
+          e.preventDefault();
+          addToCart(product);
+        }}
+      >
+        Add to Cart
+      </button>
     </div>
   );
 };

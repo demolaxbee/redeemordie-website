@@ -26,12 +26,17 @@ const Home: React.FC = () => {
     <div className="home">
       {/* Full-page background image/video */}
       <div className="home-background">
-        {/* Once you have a video, replace this with a video element */}
-        <img 
-          src={backgroundImage} 
-          alt="Background" 
-          className="background-image" 
-        />
+        <video 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          className="background-video"
+          poster="/fallback-image.jpg" // optional, e.g., from your public folder
+        >
+          <source src="/background-video.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
       </div>
 
       {/* Central content */}

@@ -104,7 +104,7 @@ const Shop: React.FC = () => {
             <Link to={`/product/${product.id}`} className="product-link">
               <div className="product-image">
                 <img
-                  src={product.imageUrl || '/placeholder-image.jpg'}
+                  src={product.imageUrls[0] || '/placeholder-image.jpg'}
                   alt={product.name}
                   className="product-img"
                 />

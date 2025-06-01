@@ -5,7 +5,8 @@ export interface Product {
     category: string;
     description: string;
     stock: number;
-    imageUrl: string;
+    imageUrls: string[];
+    sizes?: string[];
   }
   
   const AIRTABLE_TOKEN = process.env.REACT_APP_AIRTABLE_PAT;
@@ -30,7 +31,9 @@ export interface Product {
         category: record.fields.Category,
         description: record.fields.Description,
         stock: record.fields.Stock,
-        imageUrl: record.fields.Image?.[0]?.thumbnails?.large?.url|| '',
+        imageUrls: record.fields.Image?.map((img: any) => img?.thumbnails?.large?.url) || [],
+
+        sizes: record.fields.Size || [],
       }));
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -49,7 +52,8 @@ export const addProduct = async (product: Product): Promise<Product> => {
       Stock: product.stock,
       // Airtable expects image URLs to be in a specific format for attachment fields
       // This might need adjustment based on your Airtable configuration
-      Image: [{ url: product.imageUrl }]
+      Image: product.imageUrls.map(url => ({ url })),
+      Size: product.sizes || [],
     };
 
     const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
@@ -75,7 +79,8 @@ export const addProduct = async (product: Product): Promise<Product> => {
       category: data.fields.Category,
       description: data.fields.Description,
       stock: data.fields.Stock,
-      imageUrl: data.fields.Image?.[0]?.url || '',
+      imageUrls: data.fields.Image || [],
+      sizes: data.fields.Size || [],
     };
   } catch (error) {
     console.error('Error adding product to Airtable:', error);
@@ -93,7 +98,8 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
     if (product.category !== undefined) fields.Category = product.category;
     if (product.description !== undefined) fields.Description = product.description;
     if (product.stock !== undefined) fields.Stock = product.stock;
-    if (product.imageUrl !== undefined) fields.Image = [{ url: product.imageUrl }];
+    if (product.imageUrls !== undefined) fields.Image = product.imageUrls.map(url => ({ url }));
+    if (product.sizes !== undefined) fields.Size = product.sizes;
 
     const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${id}`, {
       method: 'PATCH',
@@ -118,7 +124,8 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
       category: data.fields.Category,
       description: data.fields.Description,
       stock: data.fields.Stock,
-      imageUrl: data.fields.Image?.[0]?.url || '',
+      imageUrls: data.fields.Image || [],
+      sizes: data.fields.Size || [],
     };
   } catch (error) {
     console.error('Error updating product in Airtable:', error);

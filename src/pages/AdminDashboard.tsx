@@ -11,8 +11,9 @@ interface ProductFormData {
   price: number;
   description: string;
   category: string;
-  imageUrl: string;
+  imageUrls: string[];
   stock: number;
+  sizes: string[];
 }
 
 const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
@@ -34,14 +35,17 @@ const AdminDashboard: React.FC = () => {
     price: 0,
     description: '',
     category: '',
-    imageUrl: '',
-    stock: 0
+    imageUrls: [],
+    stock: 0,
+    sizes: []
   });
   const [isEditing, setIsEditing] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
-  const [imagePreview, setImagePreview] = useState<string>('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -62,6 +66,15 @@ const AdminDashboard: React.FC = () => {
     loadProducts();
   }, []);
 
+  useEffect(() => {
+    if (showAddForm) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [showAddForm]);
+  
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -78,10 +91,11 @@ const AdminDashboard: React.FC = () => {
       price: product.price,
       description: product.description || '',
       category: product.category || '',
-      imageUrl: product.imageUrl || '',
-      stock: product.stock || 0
+      imageUrls: product.imageUrls || [],
+      stock: product.stock || 0,
+      sizes: product.sizes || []
     });
-    setImagePreview(product.imageUrl || '');
+    setImagePreview(product.imageUrls.map(url => url));
     setIsEditing(true);
     setShowAddForm(true);
   };
@@ -111,14 +125,10 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImageFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (e.target.files) {
+      const filesArray = Array.from(e.target.files);
+      setImageFiles(filesArray);
+      setImagePreview(filesArray.map(file => URL.createObjectURL(file))); // for multiple previews
     }
   };
 
@@ -128,46 +138,52 @@ const AdminDashboard: React.FC = () => {
       price: 0,
       description: '',
       category: '',
-      imageUrl: '',
-      stock: 0
+      imageUrls: [],
+      stock: 0,
+      sizes: []
     });
-    setImageFile(null);
-    setImagePreview('');
+    setImageFiles([]);
+    setImagePreview([]);
     setIsEditing(false);
   };
 
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
-
-    const response = await fetch(cloudinaryUrl, {
-      method: 'POST',
-      body: formData,
+  const uploadImagesToCloudinary = async (files: File[]): Promise<string[]> => {
+    const uploadPromises = files.map(async (file) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+  
+      const response = await fetch(cloudinaryUrl, {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+      }
+  
+      const data = await response.json();
+      return data.secure_url;
     });
-
-    if (!response.ok) {
-      throw new Error('Failed to upload image to Cloudinary');
-    }
-
-    const data = await response.json();
-    return data.secure_url;
+  
+    return Promise.all(uploadPromises);
   };
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormSubmitting(true);
 
     try {
-      let finalImageUrl = formData.imageUrl;
+      let finalImageUrls: string[] = formData.imageUrls || [];
 
-      if (imageFile) {
-        finalImageUrl = await uploadImageToCloudinary(imageFile);
+      if (imageFiles.length > 0) {
+        finalImageUrls = await uploadImagesToCloudinary(imageFiles);
       }
 
       const productData = {
         ...formData,
-        imageUrl: finalImageUrl,
+        imageUrls: finalImageUrls,
         price: Number(formData.price),
         stock: Number(formData.stock)
       };
@@ -227,7 +243,9 @@ const AdminDashboard: React.FC = () => {
               {products.map((product) => (
                 <div className="admin-product-card" key={product.id}>
                   <div className="admin-product-image">
-                    <img src={product.imageUrl || '/placeholder-image.jpg'} alt={product.name} />
+                    {(product.imageUrls || []).map((url, index) => (
+                      <img key={index} src={url} alt={`${product.name} ${index + 1}`} />
+                    ))}
                   </div>
                   <div className="admin-product-info">
                     <div className="admin-product-name">{product.name}</div>
@@ -259,12 +277,12 @@ const AdminDashboard: React.FC = () => {
                   <div className="form-group">
                     <label>Product Image</label>
                     <div className="image-preview">
-                      {imagePreview ? (
-                        <img src={imagePreview} alt="Preview" />
+                      {imagePreview.length > 0 ? (
+                        (imagePreview || []).map((src, index) => <img key={index} src={src} alt={`Preview ${index + 1}`} />)
                       ) : (
-                        <span>No image selected</span>
+                        <span>No images selected</span>
                       )}
-                    </div>
+                    </div>  
 
                     <div className="file-input-wrapper">
                       <input
@@ -272,6 +290,7 @@ const AdminDashboard: React.FC = () => {
                         ref={fileInputRef}
                         className="file-input"
                         accept="image/*"
+                        multiple
                         onChange={handleFileChange}
                         disabled={formSubmitting}
                       />
@@ -290,17 +309,49 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div className="form-group">
+                    <label>Available Sizes</label>
+                    <div className="size-checkboxes">
+                      {availableSizes.map((size) => (
+                        <label key={size} style={{ marginRight: '10px' }}>
+                          <input
+                            type="checkbox"
+                            value={size}
+                            checked={formData.sizes.includes(size)}
+                            onChange={(e) => {
+                              const { checked, value } = e.target;
+                              if (checked) {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  sizes: [...prev.sizes, value],
+                                }));
+                              } else {
+                                setFormData((prev) => ({
+                                  ...prev,
+                                  sizes: prev.sizes.filter((s) => s !== value),
+                                }));
+                              }
+                            }}
+                            disabled={formSubmitting}
+                          />
+                          {size}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
                     <label htmlFor="stock">Stock Quantity</label>
                     <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleInputChange} min="0" disabled={formSubmitting} required />
                   </div>
 
                   <div className="form-group">
                     <label htmlFor="category">Category</label>
-                    <select id="category" name="category" value={formData.category} onChange={handleInputChange} disabled={formSubmitting}>
+                    <select id="category" name="category" value={formData.category} onChange={handleInputChange} disabled={formSubmitting} required>
                       <option value="">Select Category</option>
-                      <option value="shirts">Shirts</option>
-                      <option value="hoodies">Hoodies</option>
-                      <option value="accessories">Accessories</option>
+                      <option value="T-Shirts">Shirts</option>
+                      <option value="Hoodies">Hoodies</option>
+                      <option value="Accessories">Accessories</option>
+                      <option value="Pants">Pants</option>
                     </select>
                   </div>
 

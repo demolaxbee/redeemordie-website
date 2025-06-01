@@ -1,14 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchProducts, Product } from '../utils/airtable';
+import { useCart } from '../context/CartContext';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
+import Slider from 'react-slick';
+import '../styles/product-detail.css';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>('');
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
+  const [sizeChartOpen, setSizeChartOpen] = useState(false);
+  const { addToCart } = useCart();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -16,7 +26,7 @@ const ProductDetail: React.FC = () => {
         const products = await fetchProducts();
         const found = products.find((p) => p.id === id);
         setProduct(found || null);
-        // If product has sizes, default to first size
+        setAllProducts(products.filter((p) => p.id !== id)); // Exclude current product
         if (found && (found as any).sizes && (found as any).sizes.length > 0) {
           setSelectedSize((found as any).sizes[0]);
         }
@@ -29,71 +39,120 @@ const ProductDetail: React.FC = () => {
     loadProduct();
   }, [id]);
 
+  const handleAddToCart = () => {
+    if (product) {
+      addToCart(product);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-black"></div>
+      <div className="loading-screen">
+        <div className="spinner"></div>
       </div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center">
-        <div className="text-red-500 mb-4">{error || 'Product not found.'}</div>
-        <button onClick={() => navigate(-1)} className="underline text-black">Back to Shop</button>
+      <div className="error-screen">
+        <div>{error || 'Product not found.'}</div>
+        <button onClick={() => navigate(-1)}>Back to Shop</button>
       </div>
     );
   }
 
-  // Example: sizes field (optional, if you want to add it to Airtable)
   const sizes: string[] = (product as any).sizes || ['XS', 'S', 'M', 'L', 'XL'];
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <button onClick={() => navigate(-1)} className="mb-8 text-sm underline text-black">&larr; Back to Shop</button>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
-        {/* Left: Image */}
-        <div className="bg-white rounded-lg shadow-sm flex items-center justify-center p-6">
-          <img
-            src={product.imageUrl || '/placeholder-image.jpg'}
-            alt={product.name}
-            className="object-cover w-full max-h-[200px] rounded"
-          />
+    <div className="product-detail">
+      <div className="breadcrumb">
+        <button onClick={() => navigate(-1)}>&larr; Back to Shop</button>
+      </div>
+      <div className="product-content">
+        <div className="product-gallery">
+          <Slider
+            dots={true}
+            infinite={true}
+            speed={500}
+            slidesToShow={1}
+            slidesToScroll={1}
+            arrows={true}
+          >
+            {product.imageUrls.map((url, index) => (
+              <div key={index}>
+                <img
+                  src={url}
+                  alt={`${product.name} ${index + 1}`}
+                  className="main-image"
+                  style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }}
+                />
+              </div>
+            ))}
+          </Slider>
         </div>
-        {/* Right: Info */}
-        <div className="flex flex-col gap-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-semibold mb-2">{product.name}</h1>
-            <div className="text-lg font-medium text-gray-700 mb-2">${product.price} CAD</div>
-            <div className="text-sm text-gray-500 mb-2">{product.category}</div>
-          </div>
-          {/* Size Selector (if available) */}
-          {sizes && sizes.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Size</label>
-              <select
-                className="border border-gray-300 rounded px-3 py-2 w-full max-w-xs"
-                value={selectedSize}
-                onChange={(e) => setSelectedSize(e.target.value)}
-              >
-                {sizes.map((size) => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
+        <div className="product-info">
+          <h1 className="product-title">{product.name}</h1>
+          <div className="product-price">${product.price}</div>
+
+          <div className="size-selector">
+            <h3>Size</h3>
+            <div className="size-options">
+              {sizes.map((size) => (
+                <button
+                  key={size}
+                  className={`size-button ${selectedSize === size ? 'active' : ''}`}
+                  onClick={() => setSelectedSize(size)}
+                >
+                  {size}
+                </button>
+              ))}
             </div>
-          )}
-          <div>
-            <p className="text-gray-600 text-base whitespace-pre-line">{product.description}</p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <button className="border border-black text-black bg-white py-2 px-4 rounded font-semibold hover:bg-black hover:text-white transition">ADD TO CART</button>
-            <button className="bg-orange-500 text-white py-2 px-4 rounded font-semibold hover:bg-orange-600 transition">BUY IT NOW</button>
+
+          <button className="add-to-cart" onClick={handleAddToCart}>
+            ADD TO CART
+          </button>
+
+          <div className="accordion-section">
+            <div className="accordion-header" onClick={() => setDescriptionOpen(!descriptionOpen)}>
+              <span>DESCRIPTION</span> <span>{descriptionOpen ? '-' : '+'}</span>
+            </div>
+            {descriptionOpen && (
+              <div className="accordion-content">
+                <p>{product.description}</p>
+              </div>
+            )}
           </div>
+
+          <div className="accordion-section">
+            <div className="accordion-header" onClick={() => setSizeChartOpen(!sizeChartOpen)}>
+              <span>SIZE CHART</span> <span>{sizeChartOpen ? '-' : '+'}</span>
+            </div>
+            {sizeChartOpen && (
+              <div className="accordion-content">
+                <p>Size chart details go here (fill in later).</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Related Products Section */}
+      <div className="related-section">
+        <h2>You May Also Like</h2>
+        <div className="related-products">
+          {allProducts.slice(0, 3).map((item) => (
+            <Link key={item.id} to={`/product/${item.id}`} className="related-item">
+              <img src={item.imageUrls[0] || '/placeholder-image.jpg'} alt={item.name} />
+              <div className="related-name">{item.name}</div>
+              <div className="related-price">${item.price}</div>
+            </Link>
+          ))}
         </div>
       </div>
     </div>
   );
 };
 
-export default ProductDetail; 
+export default ProductDetail;
