@@ -41,9 +41,9 @@ const ProductDetail: React.FC = () => {
 
   const handleAddToCart = () => {
     if (product) {
-      addToCart(product);
+      addToCart(product, selectedSize);
     }
-  };
+  };  
 
   if (loading) {
     return (
@@ -71,25 +71,22 @@ const ProductDetail: React.FC = () => {
       </div>
       <div className="product-content">
         <div className="product-gallery">
-          <Slider
-            dots={true}
-            infinite={true}
-            speed={500}
-            slidesToShow={1}
-            slidesToScroll={1}
-            arrows={true}
-          >
+          <img
+            src={product.imageUrls[activeImageIndex] || '/placeholder-image.jpg'}
+            alt={product.name}
+            className="main-image"
+          />
+          <div className="thumbnail-row">
             {product.imageUrls.map((url, index) => (
-              <div key={index}>
-                <img
-                  src={url}
-                  alt={`${product.name} ${index + 1}`}
-                  className="main-image"
-                  style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }}
-                />
-              </div>
+              <img
+                key={index}
+                src={url}
+                alt={`${product.name} ${index + 1}`}
+                className={`thumbnail ${index === activeImageIndex ? 'active' : ''}`}
+                onClick={() => setActiveImageIndex(index)}
+              />
             ))}
-          </Slider>
+          </div>
         </div>
         <div className="product-info">
           <h1 className="product-title">{product.name}</h1>

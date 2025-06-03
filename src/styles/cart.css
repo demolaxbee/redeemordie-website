@@ -18,71 +18,76 @@
   gap: 30px;
 }
 
+@media (max-width: 768px) {
+  .cart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .cart-list {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.cart-row {
+.cart-item {
   display: flex;
-  justify-content: space-between;
+  gap: 15px;
   align-items: center;
   border-bottom: 1px solid #333;
   padding-bottom: 20px;
 }
 
-.cart-product {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.cart-product img {
+.cart-item-image {
   width: 100px;
   height: 100px;
   object-fit: cover;
+  border-radius: 6px;
 }
 
-.cart-product h3 {
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-info h3 {
   font-size: 14px;
   text-transform: uppercase;
   margin-bottom: 5px;
 }
 
-.cart-product p {
+.cart-item-info p {
   font-size: 12px;
+  margin: 2px 0;
 }
 
-.cart-quantity {
+.cart-quantity-controls {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-top: 5px;
 }
 
-.cart-quantity button {
+.cart-quantity-controls button {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
   background: none;
   border: 1px solid #fff;
   color: #fff;
-  width: 24px;
-  height: 24px;
-  font-size: 14px;
   cursor: pointer;
-}
-
-.cart-quantity span {
-  font-size: 14px;
-}
-
-.remove-link {
-  font-size: 10px;
-  text-decoration: underline;
-  cursor: pointer;
-  margin-left: 10px;
 }
 
 .cart-line-total {
   font-size: 14px;
+  font-weight: bold;
+}
+
+.remove-link {
+  font-size: 12px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 5px;
+  display: inline-block;
 }
 
 .cart-summary {
@@ -93,14 +98,24 @@
   gap: 20px;
 }
 
+.note-box {
+  width: 100%;
+  min-height: 80px;
+  background: #000;
+  border: 1px solid #fff;
+  color: #fff;
+  padding: 10px;
+  font-family: inherit;
+}
+
 .summary-line {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .summary-note {
-  font-size: 10px;
+  font-size: 12px;
   text-align: center;
   color: #aaa;
 }
@@ -109,9 +124,11 @@
   background: #fff;
   color: #000;
   padding: 12px;
-  font-size: 12px;
+  font-size: 14px;
   text-transform: uppercase;
   cursor: pointer;
+  font-weight: bold;
+  border: none;
 }
 
 .checkout-button:hover {
@@ -137,15 +154,10 @@
   font-size: 12px;
   text-transform: uppercase;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .button:hover {
   background: #444;
   color: #fff;
-}
-
-@media (max-width: 768px) {
-  .cart-grid {
-    grid-template-columns: 1fr;
-  }
 }

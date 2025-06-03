@@ -145,7 +145,7 @@ const Navbar: React.FC = () => {
                     {cartItems.map(item => (
                       <div key={item.product.id} className="cart-item">
                         <img
-                          src={item.product.imageUrls[0] || '/placeholder-image.jpg'}
+                          src={item.product.imageUrls?.[0] || '/placeholder-image.jpg'}
                           alt={item.product.name}
                           className="cart-item-image"
                         />

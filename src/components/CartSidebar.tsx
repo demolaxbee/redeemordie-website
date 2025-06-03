@@ -27,16 +27,21 @@ const CartSidebar: React.FC = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="cart-header">
-              <h2>Your Cart</h2>
+              <h2>Cart</h2>
               <button className="close-cart" onClick={toggleCart}>×</button>
             </div>
+
             <div className="cart-items">
               {cartItems.length === 0 ? (
                 <div className="cart-empty">Your cart is empty</div>
               ) : (
                 cartItems.map(item => (
                   <div key={item.product.id} className="cart-item">
-                    <img src={item.product.imageUrls[0]} alt={item.product.name} className="cart-item-image" />
+                    <img
+                      src={item.product.imageUrls?.[0] || '/placeholder-image.jpg'}
+                      alt={item.product.name}
+                      className="cart-item-image"
+                    />
                     <div className="cart-item-details">
                       <h3>{item.product.name}</h3>
                       <p>${item.product.price.toFixed(2)}</p>
@@ -45,17 +50,26 @@ const CartSidebar: React.FC = () => {
                         <span>{item.quantity}</span>
                         <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
                       </div>
+                      <button
+                        className="remove-link"
+                        onClick={() => removeFromCart(item.product.id)}
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
                 ))
               )}
             </div>
+
             <div className="cart-footer">
               <div className="cart-total">
                 <span>Total:</span>
                 <span>${totalPrice.toFixed(2)}</span>
               </div>
-              <Link to="/cart" className="checkout-btn" onClick={toggleCart}>View Cart</Link>
+              <Link to="/cart" className="checkout-btn" onClick={toggleCart}>
+                View Cart
+              </Link>
             </div>
           </motion.div>
         </motion.div>

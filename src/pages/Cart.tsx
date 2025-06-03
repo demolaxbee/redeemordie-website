@@ -23,20 +23,23 @@ const Cart: React.FC = () => {
         <div className="cart-grid">
           <div className="cart-list">
             {cartItems.map((item) => (
-              <div className="cart-row" key={item.product.id}>
-                <div className="cart-product">
-                  <img src={item.product.imageUrls[0]} alt={item.product.name} />
-                  <div>
-                    <h3>{item.product.name}</h3>
-                    <p>{item.product.price.toFixed(2)}</p>
+              <div className="cart-item" key={item.product.id}>
+                <img
+                  src={item.product.imageUrls?.[0] || '/placeholder-image.jpg'}
+                  alt={item.product.name}
+                  className="cart-item-image"
+                />
+                <div className="cart-item-info">
+                  <h3>{item.product.name}</h3>
+                  <p>Size: {item.selectedSize || 'N/A'}</p>
+                  <p>${item.product.price.toFixed(2)}</p>
+                  <div className="cart-quantity-controls">
+                    <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>-</button>
+                    <span>{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
                   </div>
-                </div>
-                <div className="cart-quantity">
-                  <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>-</button>
-                  <span>{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
                   <button className="remove-link" onClick={() => removeFromCart(item.product.id)}>
-                    REMOVE
+                    Remove
                   </button>
                 </div>
                 <div className="cart-line-total">
@@ -47,9 +50,10 @@ const Cart: React.FC = () => {
           </div>
 
           <div className="cart-summary">
+            <textarea className="note-box" placeholder="Add Order Note" />
             <div className="summary-line">
               <span>Total:</span>
-              <span>${totalPrice.toFixed(2)}</span>
+              <span>${totalPrice.toFixed(2)} CAD</span>
             </div>
             <p className="summary-note">Taxes and shipping calculated at checkout</p>
             <button className="checkout-button">Checkout</button>

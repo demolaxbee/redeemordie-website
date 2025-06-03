@@ -4,11 +4,12 @@ import { Product } from '../utils/airtable';
 interface CartItem {
   product: Product;
   quantity: number;
+  selectedSize?: string;
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product) => void;
+  addToCart: (product: Product, selectedSize?: string) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
@@ -40,17 +41,19 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, selectedSize?: string) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.product.id === product.id);
+      const existingItem = prevItems.find(
+        item => item.product.id === product.id && item.selectedSize === selectedSize
+      );
       if (existingItem) {
         return prevItems.map(item =>
-          item.product.id === product.id
+          item.product.id === product.id && item.selectedSize === selectedSize
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prevItems, { product, quantity: 1 }];
+      return [...prevItems, { product, quantity: 1, selectedSize }];
     });
   };
 
