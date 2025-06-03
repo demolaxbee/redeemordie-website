@@ -24,15 +24,16 @@ const Home: React.FC = () => {
 
   return (
     <div className="home">
-      {/* Full-page background image/video */}
+      {/* Full-page background image/video with overlay */}
       <div className="home-background">
+        <div className="overlay"></div>
         <video 
           autoPlay 
           loop 
           muted 
           playsInline 
           className="background-video"
-          poster="/fallback-image.jpg" // optional, e.g., from your public folder
+          poster="/fallback-image.jpg"
         >
           <source src="/background-video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
@@ -41,11 +42,16 @@ const Home: React.FC = () => {
 
       {/* Central content */}
       <div className="home-content">
-        <div className="centered-content">
+        <motion.div 
+          className="centered-content glass"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
             className="brand-name"
           >
             <img
@@ -55,10 +61,25 @@ const Home: React.FC = () => {
               style={{ height: '200px', width: 'auto' }}
             />
           </motion.h1>
-        </div>
+          
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="tagline"
+          >
+            Where Style Meets Street
+          </motion.p>
+        </motion.div>
 
         {/* Newsletter signup */}
-        <div className="newsletter-container">
+        <motion.div 
+          className="newsletter-container glass"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+        >
+          <h3>Join Our Community</h3>
           <form className="newsletter-form" onSubmit={handleSubmit}>
             <div className="newsletter-input-group">
               <input
@@ -67,6 +88,7 @@ const Home: React.FC = () => {
                 value={email}
                 onChange={handleEmailChange}
                 required
+                className="glass-input"
               />
               <button type="submit" className="submit-btn">
                 SUBMIT <span className="arrow">→</span>
@@ -86,7 +108,7 @@ const Home: React.FC = () => {
               </motion.div>
             )}
           </AnimatePresence>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

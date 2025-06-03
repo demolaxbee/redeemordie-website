@@ -165,15 +165,14 @@
 
 /* Home Page Styles */
 .home {
-  height: 100vh;
-  width: 100%;
-  overflow: hidden;
   position: relative;
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
 
-/* Background styles */
 .home-background {
   position: absolute;
   top: 0;
@@ -183,58 +182,67 @@
   z-index: -1;
 }
 
-.background-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.background-video {
+.overlay {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  z-index: -1;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.7),
+    rgba(0, 0, 0, 0.5)
+  );
+  z-index: 1;
 }
 
-/* Content container */
+.background-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .home-content {
-  flex: 1;
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1200px;
+  padding: var(--spacing-xl);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 80px 0 0;
+  align-items: center;
+  gap: var(--spacing-xl);
 }
 
 .centered-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
   text-align: center;
+  padding: var(--spacing-xl);
+  width: 100%;
+  max-width: 800px;
 }
 
 .brand-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 72px;
-  color: #fff;
-  text-transform: uppercase;
-  letter-spacing: 4px;
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  margin-bottom: var(--spacing-lg);
 }
 
-/* Newsletter styles */
-.newsletter-container {
-  padding: 30px 20px;
+.tagline {
+  font-size: 1.5rem;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-top: var(--spacing-md);
+}
 
+.newsletter-container {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto 60px;
+  max-width: 600px;
+  padding: var(--spacing-lg);
+  text-align: center;
+}
+
+.newsletter-container h3 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-primary);
 }
 
 .newsletter-form {
@@ -243,117 +251,96 @@
 
 .newsletter-input-group {
   display: flex;
-  border: 1px solid white;  
-  border-radius: 30px;      
-  overflow: hidden;
-  background: transparent; 
-  width: 100%;  
-  align-items: center;
-  background: rgba(255, 255, 255, 0.1);
+  gap: var(--spacing-sm);
+  width: 100%;
 }
 
-.newsletter-input-group input {
+.glass-input {
   flex: 1;
-  background: transparent;
-  border: none;
-  color: white;
-  padding: 15px 20px;
-  font-size: 14px;
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  transition: all var(--transition-normal);
+}
+
+.glass-input:focus {
   outline: none;
-  /* height: 100%; */ 
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.2);
 }
 
-.newsletter-input-group input::placeholder {
-  color: rgba(255, 255, 255, 0.7);
-  letter-spacing: 1px;
-  font-family: inherit;
-}
-
-.newsletter-input-group button {
-  border: none;
-  background: transparent;
-  color: white;
-  padding: 0 20px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%; 
-  min-width: 100px;
-  border-left: 1px solid white;
-  transition: background 0.3s, color 0.3s;
-}
-
-.newsletter-input-group button:hover {
-  background: white;
-  color: black;
+.glass-input::placeholder {
+  color: var(--color-text-secondary);
 }
 
 .submit-btn {
-  background: transparent;
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: linear-gradient(45deg, var(--color-accent), var(--color-accent-hover));
+  color: var(--color-primary);
   border: none;
-  color: white;
-  padding: 0 20px;
-  font-size: 4px;
-  font-weight: 600;
-  letter-spacing: 1px;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-primary);
+  font-weight: 500;
+  text-transform: uppercase;
   cursor: pointer;
+  transition: all var(--transition-normal);
   display: flex;
   align-items: center;
-  transition: background-color 0.3s, color 0.3s;
+  gap: var(--spacing-sm);
 }
 
 .submit-btn:hover {
-  background-color: white;
-  color: black;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
 }
 
 .arrow {
-  margin-left: 6px;
-  font-size: 12px;
+  transition: transform var(--transition-normal);
+}
+
+.submit-btn:hover .arrow {
+  transform: translateX(4px);
 }
 
 .submission-message {
-  text-align: center;
-  color: #fff;
-  margin-top: 10px;
-  font-size: 14px;
+  margin-top: var(--spacing-md);
+  color: var(--color-accent);
+  font-weight: 500;
 }
 
-/* Mobile styles */
 @media (max-width: 768px) {
-  .brand-name {
-    font-size: 48px;
-  }
-
-  .newsletter-container {
-    padding: 20px;
-    margin-bottom: 40px;
+  .home-content {
+    padding: var(--spacing-lg);
   }
 
   .newsletter-input-group {
     flex-direction: column;
-    border-radius: 0;
-  }
-
-  .newsletter-input-group input {
-    padding: 12px 15px;
-    margin-bottom: 10px;
-    text-align: center;
-    width: 100%;
   }
 
   .submit-btn {
     width: 100%;
-    padding: 12px;
     justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .brand-name {
-    font-size: 36px;
+  .home-content {
+    padding: var(--spacing-md);
+  }
+
+  .centered-content {
+    padding: var(--spacing-lg);
+  }
+
+  .tagline {
+    font-size: 1.25rem;
   }
 } 

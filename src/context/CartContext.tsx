@@ -10,8 +10,8 @@ interface CartItem {
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: Product, selectedSize?: string) => void;
-  removeFromCart: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeFromCart: (productId: string, selectedSize?: string) => void;
+  updateQuantity: (productId: string, quantity: number, selectedSize?: string) => void;
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
@@ -57,20 +57,26 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const removeFromCart = (productId: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.product.id !== productId));
+  const removeFromCart = (productId: string, selectedSize?: string) => {
+    setCartItems(prevItems =>
+      prevItems.filter(item =>
+        !(item.product.id === productId && item.selectedSize === selectedSize)
+      )
+    );
   };
+  
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = (productId: string, quantity: number, selectedSize?: string) => {
     if (quantity < 1) return;
     setCartItems(prevItems =>
       prevItems.map(item =>
-        item.product.id === productId
+        item.product.id === productId && item.selectedSize === selectedSize
           ? { ...item, quantity }
           : item
       )
     );
   };
+  
 
   const clearCart = () => {
     setCartItems([]);

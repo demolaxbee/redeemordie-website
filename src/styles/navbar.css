@@ -20,7 +20,7 @@
   z-index: 1000;
   border-bottom: 1px solid #222;
   padding: 15px 0;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Space Mono', monospace;
   color: #fff;
 }
 
@@ -54,7 +54,7 @@
   text-decoration: none;
   color: #fff;
   letter-spacing: 1px;
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: 'Space Mono', monospace;
 }
 
 .navbar-main-links {
