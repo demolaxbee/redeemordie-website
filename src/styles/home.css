@@ -257,13 +257,15 @@
 
 .glass-input {
   flex: 1;
-  padding: var(--spacing-md);
+  padding: 16px 20px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius-md);
   color: var(--color-text);
   font-family: var(--font-primary);
   font-size: 1rem;
+  line-height: 1.2;
+  height: 56px;
   transition: all var(--transition-normal);
 }
 
@@ -278,7 +280,7 @@
 }
 
 .submit-btn {
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: 16px 24px;
   background: linear-gradient(45deg, var(--color-accent), var(--color-accent-hover));
   color: var(--color-primary);
   border: none;
@@ -290,7 +292,10 @@
   transition: all var(--transition-normal);
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm);
+  height: 56px;
+  min-width: 120px;
 }
 
 .submit-btn:hover {
