@@ -111,9 +111,9 @@ const Cart: React.FC = () => {
                     </div>
                   </div>
                   <p className="summary-note">Taxes and shipping calculated at checkout</p>
-                  <button className="checkout-button">
+                  <Link to="/checkout" className="checkout-button">
                     Proceed to Checkout
-                  </button>
+                  </Link>
                 </div>
               </div>
             </motion.div>

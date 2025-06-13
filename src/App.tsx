@@ -15,6 +15,7 @@ import Contact from './pages/Contact';
 import Cart from './pages/Cart';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import Checkout from './pages/Checkout';
 
 // Components
 import Navbar from './components/Navbar';
@@ -53,6 +54,7 @@ const App: React.FC = () => {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
                 <Route path="/admin" element={<AdminLogin />} />
                 <Route 
                   path="/admin/dashboard" 
