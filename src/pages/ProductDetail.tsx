@@ -62,7 +62,13 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  const sizes: string[] = (product as any).sizes || ['XS', 'S', 'M', 'L', 'XL'];
+  // All possible sizes
+  const allSizes: string[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const availableSizes: string[] = (product as any).sizes || [];
+  
+  const getSizeStatus = (size: string) => {
+    return availableSizes.includes(size);
+  };
 
   return (
     <div className="product-detail">
@@ -89,21 +95,27 @@ const ProductDetail: React.FC = () => {
           </div>
         </div>
         <div className="product-info">
-          <h1 className="product-title">{product.name}</h1>
-          <div className="product-price">${product.price}</div>
+          <div className="product-header">
+            <h1 className="product-title">{product.name}</h1>
+            <div className="product-price">${product.price}</div>
+          </div>
 
           <div className="size-selector">
             <h3>Size</h3>
             <div className="size-options">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  className={`size-button ${selectedSize === size ? 'active' : ''}`}
-                  onClick={() => setSelectedSize(size)}
-                >
-                  {size}
-                </button>
-              ))}
+              {allSizes.map((size) => {
+                const isAvailable = getSizeStatus(size);
+                return (
+                  <button
+                    key={size}
+                    className={`size-button ${selectedSize === size ? 'active' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+                    onClick={() => isAvailable && setSelectedSize(size)}
+                    disabled={!isAvailable}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -141,9 +153,13 @@ const ProductDetail: React.FC = () => {
         <div className="related-products">
           {allProducts.slice(0, 3).map((item) => (
             <Link key={item.id} to={`/product/${item.id}`} className="related-item">
-              <img src={item.imageUrls[0] || '/placeholder-image.jpg'} alt={item.name} />
-              <div className="related-name">{item.name}</div>
-              <div className="related-price">${item.price}</div>
+              <div className="image-container">
+                <img src={item.imageUrls[0] || '/placeholder-image.jpg'} alt={item.name} />
+              </div>
+              <div className="product-info">
+                <div className="related-name">{item.name}</div>
+                <div className="related-price">${item.price}</div>
+              </div>
             </Link>
           ))}
         </div>

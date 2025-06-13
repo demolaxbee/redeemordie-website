@@ -24,6 +24,7 @@ import Footer from './components/Footer';
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { SearchProvider } from './context/SearchContext';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();

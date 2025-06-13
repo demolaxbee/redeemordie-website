@@ -36,8 +36,10 @@ const ProductCard: React.FC<ProductCardProps> = ({
             className="product-img"
           />
         </div>
-        <h2 className="product-title">{product.name}</h2>
-        <p className="product-price">${product.price.toFixed(2)}</p>
+        <div className="product-info">
+          <h2 className="product-title">{product.name}</h2>
+          <p className="product-price">${product.price.toFixed(2)}</p>
+        </div>
       </Link>
       <button 
         className="add-to-cart-btn"
