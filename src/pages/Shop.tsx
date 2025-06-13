@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProducts, Product } from '../utils/airtable';
+import { useSearch } from '../context/SearchContext';
 
 const Shop: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  
+  const { searchQuery, searchResults, clearSearch } = useSearch();
+  
+  // Determine which products to display
+  const displayProducts = searchQuery.trim() ? searchResults : products;
 
   useEffect(() => {
     const loadProducts = async () => {
@@ -46,11 +52,16 @@ const Shop: React.FC = () => {
   return (
     <div className="shop-page">
       <div className="shop-header">
-        <h1>SHOP ALL</h1>
+        <h1>{searchQuery.trim() ? `SEARCH RESULTS FOR "${searchQuery}"` : 'SHOP ALL'}</h1>
         <div className="breadcrumb">
           <Link to="/">Home</Link>
           <span> / </span>
-          <span>Shop All</span>
+          <span>{searchQuery.trim() ? 'Search Results' : 'Shop All'}</span>
+          {searchQuery.trim() && (
+            <button className="clear-search-btn" onClick={clearSearch}>
+              Clear Search
+            </button>
+          )}
         </div>
       </div>
 
@@ -58,7 +69,7 @@ const Shop: React.FC = () => {
         <button className="filter-toggle" onClick={toggleFilters}>
           FILTER
         </button>
-        <div className="items-count">{products.length} items</div>
+        <div className="items-count">{displayProducts.length} items</div>
       </div>
 
       {showFilters && (
@@ -99,23 +110,33 @@ const Shop: React.FC = () => {
       )}
 
       <div className="products-grid">
-        {products.map((product) => (
-          <div className="product-card" key={product.id}>
-            <Link to={`/product/${product.id}`} className="product-link">
-              <div className="product-image">
-                <img
-                  src={product.imageUrls[0] || '/placeholder-image.jpg'}
-                  alt={product.name}
-                  className="product-img"
-                />
-              </div>
-              <div className="product-info">
-                <h2 className="product-title">{product.name}</h2>
-                <p className="product-price">${product.price}</p>
-              </div>
-            </Link>
+        {displayProducts.length > 0 ? (
+          displayProducts.map((product) => (
+            <div className="product-card" key={product.id}>
+              <Link to={`/product/${product.id}`} className="product-link">
+                <div className="product-image">
+                  <img
+                    src={product.imageUrls[0] || '/placeholder-image.jpg'}
+                    alt={product.name}
+                    className="product-img"
+                  />
+                </div>
+                <div className="product-info">
+                  <h2 className="product-title">{product.name}</h2>
+                  <p className="product-price">${product.price}</p>
+                </div>
+              </Link>
+            </div>
+          ))
+        ) : searchQuery.trim() ? (
+          <div className="no-results">
+            <h3>No products found for "{searchQuery}"</h3>
+            <p>Try adjusting your search terms or browse all products.</p>
+            <button className="browse-all-btn" onClick={clearSearch}>
+              Browse All Products
+            </button>
           </div>
-        ))}
+        ) : null}
       </div>
     </div>
   );

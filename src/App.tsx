@@ -23,6 +23,7 @@ import Footer from './components/Footer';
 // Context
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { SearchProvider } from './context/SearchContext';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -42,31 +43,33 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <CartProvider>
-        <Router>
-          <div className="app">
-            <Navbar />
-            <main>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/shop" element={<Shop />} />
-                <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/cart" element={<Cart />} />
-                <Route path="/admin" element={<AdminLogin />} />
-                <Route 
-                  path="/admin/dashboard" 
-                  element={
-                    <PrivateRoute>
-                      <AdminDashboard />
-                    </PrivateRoute>
-                  } 
-                />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </Router>
+        <SearchProvider>
+          <Router>
+            <div className="app">
+              <Navbar />
+              <main>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/shop" element={<Shop />} />
+                  <Route path="/product/:id" element={<ProductDetail />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/admin" element={<AdminLogin />} />
+                  <Route 
+                    path="/admin/dashboard" 
+                    element={
+                      <PrivateRoute>
+                        <AdminDashboard />
+                      </PrivateRoute>
+                    } 
+                  />
+                </Routes>
+              </main>
+              <Footer />
+            </div>
+          </Router>
+        </SearchProvider>
       </CartProvider>
     </AuthProvider>
   );

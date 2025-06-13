@@ -1,18 +1,44 @@
-import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { useSearch } from '../context/SearchContext';
+import { fetchProducts, Product } from '../utils/airtable';
 import '../styles/navbar.css';
 
 const Navbar: React.FC = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
+  
   const location = useLocation();
+  const navigate = useNavigate();
   const { cartItems, totalItems, totalPrice, updateQuantity, isCartOpen, toggleCart, closeCart } = useCart();
+  const { searchQuery, setSearchQuery, setSearchResults, filterProducts, clearSearch } = useSearch();
+  
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const products = await fetchProducts();
+        setAllProducts(products);
+      } catch (error) {
+        console.error('Failed to load products:', error);
+      }
+    };
+    loadProducts();
+  }, []);
 
-
+  useEffect(() => {
+    if (searchQuery.trim() && allProducts.length > 0) {
+      const suggestions = filterProducts(allProducts, searchQuery).slice(0, 5);
+      setSearchSuggestions(suggestions);
+    } else {
+      setSearchSuggestions([]);
+    }
+  }, [searchQuery, allProducts, filterProducts]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -20,6 +46,31 @@ const Navbar: React.FC = () => {
 
   const toggleSearch = () => {
     setIsSearchOpen(!isSearchOpen);
+    if (!isSearchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    } else {
+      clearSearch();
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      const results = filterProducts(allProducts, searchQuery);
+      setSearchResults(results);
+      setIsSearchOpen(false);
+      navigate('/shop');
+    }
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSuggestionClick = (product: Product) => {
+    setIsSearchOpen(false);
+    clearSearch();
+    navigate(`/product/${product.id}`);
   };
 
   return (
@@ -99,14 +150,45 @@ const Navbar: React.FC = () => {
           >
             <div className="search-container">
               <button className="close-search" onClick={toggleSearch}>×</button>
-              <form className="search-form">
-                <input type="text" placeholder="Search..." autoFocus />
+              <form className="search-form" onSubmit={handleSearchSubmit}>
+                <input 
+                  ref={searchInputRef}
+                  type="text" 
+                  placeholder="Search products..." 
+                  value={searchQuery}
+                  onChange={handleSearchInputChange}
+                  autoFocus 
+                />
                 <button type="submit">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
               </form>
+              
+              {/* Search Suggestions */}
+              {searchSuggestions.length > 0 && (
+                <div className="search-suggestions">
+                  <h4>Suggestions</h4>
+                  {searchSuggestions.map((product) => (
+                    <div 
+                      key={product.id} 
+                      className="search-suggestion-item"
+                      onClick={() => handleSuggestionClick(product)}
+                    >
+                      <img 
+                        src={product.imageUrls[0] || '/placeholder-image.jpg'} 
+                        alt={product.name}
+                        className="suggestion-image"
+                      />
+                      <div className="suggestion-info">
+                        <div className="suggestion-name">{product.name}</div>
+                        <div className="suggestion-price">${product.price}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         )}

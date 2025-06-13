@@ -241,6 +241,63 @@
   color: #fff;
 }
 
+/* Search-related styles */
+.clear-search-btn {
+  background: none;
+  border: 1px solid #444;
+  color: #999;
+  font-size: 12px;
+  padding: 4px 8px;
+  margin-left: 10px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.clear-search-btn:hover {
+  border-color: #fff;
+  color: #fff;
+}
+
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: #fff;
+}
+
+.no-results h3 {
+  font-size: 18px;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.no-results p {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 25px;
+}
+
+.browse-all-btn {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  padding: 12px 24px;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background-color 0.3s ease;
+}
+
+.browse-all-btn:hover {
+  background-color: #333;
+  color: #fff;
+}
+
 /* Loading and Error States */
 .loading-container,
 .error-container {
