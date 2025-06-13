@@ -62,7 +62,13 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  const sizes: string[] = (product as any).sizes || ['XS', 'S', 'M', 'L', 'XL'];
+  // All possible sizes
+  const allSizes: string[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const availableSizes: string[] = (product as any).sizes || [];
+  
+  const getSizeStatus = (size: string) => {
+    return availableSizes.includes(size);
+  };
 
   return (
     <div className="product-detail">
@@ -95,15 +101,19 @@ const ProductDetail: React.FC = () => {
           <div className="size-selector">
             <h3>Size</h3>
             <div className="size-options">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  className={`size-button ${selectedSize === size ? 'active' : ''}`}
-                  onClick={() => setSelectedSize(size)}
-                >
-                  {size}
-                </button>
-              ))}
+              {allSizes.map((size) => {
+                const isAvailable = getSizeStatus(size);
+                return (
+                  <button
+                    key={size}
+                    className={`size-button ${selectedSize === size ? 'active' : ''} ${!isAvailable ? 'unavailable' : ''}`}
+                    onClick={() => isAvailable && setSelectedSize(size)}
+                    disabled={!isAvailable}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

@@ -92,9 +92,24 @@
 }
 
 .size-button.active,
-.size-button:hover {
+.size-button:hover:not(.unavailable) {
   background: #fff;
   color: #000;
+}
+
+.size-button.unavailable {
+  opacity: 0.3;
+  cursor: not-allowed;
+  color: #ffffff;
+  border-color: #444;
+  background-color: #1a1a1a;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.size-button.unavailable:hover {
+  background-color: #1a1a1a;
+  color: #555;
+  opacity: 0.3;
 }
 
 .add-to-cart {
