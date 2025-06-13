@@ -18,8 +18,9 @@
 
 .product-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: 1fr 400px;
+  gap: 60px;
+  align-items: start;
 }
 
 .product-gallery {
@@ -57,7 +58,16 @@
 .product-info {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  position: sticky;
+  top: 20px;
+}
+
+.product-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
 }
 
 .product-title {
@@ -65,10 +75,12 @@
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 1px;
+  margin-bottom: 8px;
 }
 
 .product-price {
   font-size: 16px;
+  margin-bottom: 0;
 }
 
 .size-selector h3 {

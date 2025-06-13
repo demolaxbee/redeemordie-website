@@ -95,8 +95,10 @@ const ProductDetail: React.FC = () => {
           </div>
         </div>
         <div className="product-info">
-          <h1 className="product-title">{product.name}</h1>
-          <div className="product-price">${product.price}</div>
+          <div className="product-header">
+            <h1 className="product-title">{product.name}</h1>
+            <div className="product-price">${product.price}</div>
+          </div>
 
           <div className="size-selector">
             <h3>Size</h3>
