@@ -144,7 +144,7 @@
 /* Products Grid */
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 30px;
   justify-items: center;
 }
@@ -340,16 +340,16 @@
     max-width: none;
   }
   .product-image {
-    height: 200px;
+    height: 180px;
   }
   .product-info {
-    padding: 15px 10px;
+    padding: 12px 8px;
   }
   .product-title {
-    font-size: 12px;
+    font-size: 11px;
   }
   .product-price {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
@@ -358,12 +358,19 @@
     font-size: 24px;
   }
   .products-grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
   .product-image {
-    height: 180px;
+    height: 160px;
   }
   .product-info {
-    padding: 12px 8px;
+    padding: 10px 6px;
+  }
+  .product-title {
+    font-size: 10px;
+  }
+  .product-price {
+    font-size: 10px;
   }
 } 

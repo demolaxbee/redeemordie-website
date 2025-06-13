@@ -7,7 +7,6 @@ const Shop: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
   
   const { searchQuery, searchResults, clearSearch } = useSearch();
   
@@ -28,10 +27,6 @@ const Shop: React.FC = () => {
     };
     loadProducts();
   }, []);
-
-  const toggleFilters = () => {
-    setShowFilters(!showFilters);
-  };
 
   if (loading) {
     return (
@@ -66,48 +61,8 @@ const Shop: React.FC = () => {
       </div>
 
       <div className="shop-controls">
-        <button className="filter-toggle" onClick={toggleFilters}>
-          FILTER
-        </button>
         <div className="items-count">{displayProducts.length} items</div>
       </div>
-
-      {showFilters && (
-        <div className="filter-panel">
-          <div className="filter-section">
-            <h3>SORT</h3>
-            <select className="sort-select">
-              <option value="featured">Featured</option>
-              <option value="best-selling">Best selling</option>
-              <option value="a-z">Alphabetically, A-Z</option>
-              <option value="z-a">Alphabetically, Z-A</option>
-              <option value="price-low">Price, low to high</option>
-              <option value="price-high">Price, high to low</option>
-              <option value="date-old">Date, old to new</option>
-              <option value="date-new">Date, new to old</option>
-            </select>
-          </div>
-          
-          <div className="filter-section">
-            <h3>AVAILABILITY</h3>
-            <div className="filter-checkbox">
-              <input type="checkbox" id="in-stock" />
-              <label htmlFor="in-stock">In stock ({products.length})</label>
-            </div>
-          </div>
-          
-          <div className="filter-section price-filter">
-            <h3>PRICE</h3>
-            <div className="price-inputs">
-              <input type="number" placeholder="From $" min="0" />
-              <input type="number" placeholder="To $" min="0" />
-            </div>
-            <button className="apply-btn">APPLY</button>
-          </div>
-          
-          <button className="see-results-btn">SEE RESULTS</button>
-        </div>
-      )}
 
       <div className="products-grid">
         {displayProducts.length > 0 ? (
