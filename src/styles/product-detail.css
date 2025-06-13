@@ -283,5 +283,24 @@
 @media (max-width: 768px) {
   .product-content {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .product-info {
+    position: static;
+    background: transparent;
+    border: none;
+  }
+  
+  .product-header {
+    background: transparent;
+  }
+  
+  .product-title {
+    color: #fff;
+  }
+  
+  .product-price {
+    color: #fff;
   }
 }
