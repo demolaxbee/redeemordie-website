@@ -109,8 +109,10 @@ const Shop: React.FC = () => {
                   className="product-img"
                 />
               </div>
-              <h2 className="product-title">{product.name}</h2>
-              <p className="product-price">${product.price}</p>
+              <div className="product-info">
+                <h2 className="product-title">{product.name}</h2>
+                <p className="product-price">${product.price}</p>
+              </div>
             </Link>
           </div>
         ))}

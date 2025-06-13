@@ -141,9 +141,13 @@ const ProductDetail: React.FC = () => {
         <div className="related-products">
           {allProducts.slice(0, 3).map((item) => (
             <Link key={item.id} to={`/product/${item.id}`} className="related-item">
-              <img src={item.imageUrls[0] || '/placeholder-image.jpg'} alt={item.name} />
-              <div className="related-name">{item.name}</div>
-              <div className="related-price">${item.price}</div>
+              <div className="image-container">
+                <img src={item.imageUrls[0] || '/placeholder-image.jpg'} alt={item.name} />
+              </div>
+              <div className="product-info">
+                <div className="related-name">{item.name}</div>
+                <div className="related-price">${item.price}</div>
+              </div>
             </Link>
           ))}
         </div>
