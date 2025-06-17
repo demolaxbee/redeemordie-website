@@ -5,6 +5,9 @@ import './styles/navbar.css';
 import './styles/footer.css';
 import './styles/shop.css';
 import './styles/admin.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 
 // Pages
 import Home from './pages/Home';
@@ -71,6 +74,7 @@ const App: React.FC = () => {
               <Footer />
             </div>
           </Router>
+          <ToastContainer />
         </SearchProvider>
       </CartProvider>
     </AuthProvider>
