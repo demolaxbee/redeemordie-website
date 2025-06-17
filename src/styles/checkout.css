@@ -83,7 +83,25 @@
 
 .checkout-form input:focus {
   outline: none;
-  border-color: #ff3366;
+  border-color: #ff0000;
+}
+
+.checkout-form select {
+  width: 100%; 
+  padding: 12px;
+  background: #222;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 6px;
+  font-size: 1rem;
+  margin-bottom: 2px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.checkout-form select:focus {
+  border-color: #ff0000;
+  outline: none;
 }
 
 .card-element-wrapper {
@@ -95,7 +113,7 @@
 }
 
 .checkout-error {
-  color: #ff6b6b;
+  color: #ff0000;
   font-size: 0.95rem;
   margin-bottom: 8px;
 }
@@ -107,7 +125,7 @@
 }
 
 .checkout-submit {
-  background: linear-gradient(45deg, #ff3366, #ff1a4f);
+  background: linear-gradient(45deg, #ff0000, #ff0000);
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -125,7 +143,7 @@
 }
 
 .checkout-submit:hover:not(:disabled) {
-  background: linear-gradient(45deg, #ff1a4f, #ff3366);
+  background: linear-gradient(45deg, #ff0000, #ff0000);
   box-shadow: 0 2px 8px rgba(255,51,102,0.12);
 }
 

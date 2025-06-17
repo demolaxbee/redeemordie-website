@@ -265,15 +265,25 @@
   text-transform: uppercase;
   cursor: pointer;
   transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
 }
 
-.checkout-button:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+.checkout-button::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: 8px;
+  width: 0;
+  height: 2px;
+  background: red;
+  transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 
-.checkout-button:active {
-  transform: translateY(0);
+.checkout-button:hover::after,
+.checkout-button:focus::after {
+  width: 100%;
 }
 
 @media (max-width: 768px) {
