@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useSearch } from '../context/SearchContext';
 import { fetchProducts, Product } from '../utils/airtable';
+import CurrencySelector from './CurrencySelector';
 import '../styles/navbar.css';
 
 const Navbar: React.FC = () => {
@@ -14,7 +15,7 @@ const Navbar: React.FC = () => {
   
   const location = useLocation();
   const navigate = useNavigate();
-  const { cartItems, totalItems, totalPrice, updateQuantity, isCartOpen, toggleCart, closeCart } = useCart();
+  const { cartItems, totalItems, formattedTotal, updateQuantity, isCartOpen, toggleCart, closeCart } = useCart();
   const { searchQuery, setSearchQuery, setSearchResults, filterProducts, clearSearch } = useSearch();
   
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -94,6 +95,7 @@ const Navbar: React.FC = () => {
 
         {/* Right section: Icons */}
         <div className="navbar-right">
+          <CurrencySelector />
           <button className="icon-btn search-btn" onClick={toggleSearch} aria-label="Search">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

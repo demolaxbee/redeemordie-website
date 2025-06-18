@@ -1,11 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { formatPrice } from '../utils/formatPrice';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/cart.css';
 
+interface PriceDisplayProps {
+  price: number;
+  currencyCode: string;
+  className?: string;
+}
+
+const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, currencyCode, className }) => {
+  const [formattedPrice, setFormattedPrice] = useState(`C$${price.toFixed(2)}`);
+
+  useEffect(() => {
+    const updatePrice = async () => {
+      try {
+        const formatted = await formatPrice(price, currencyCode);
+        setFormattedPrice(formatted);
+      } catch (error) {
+        console.error('Error formatting price:', error);
+        setFormattedPrice(`C$${price.toFixed(2)}`);
+      }
+    };
+
+    updatePrice();
+  }, [price, currencyCode]);
+
+  return <p className={className || 'item-price'}>{formattedPrice}</p>;
+};
+
 const Cart: React.FC = () => {
-  const { cartItems, updateQuantity, removeFromCart, totalPrice } = useCart();
+  const { cartItems, updateQuantity, removeFromCart, totalPriceCAD, formattedTotal } = useCart();
+  const { currencyCode } = useCurrency();
 
   return (
     <div className="cart-page">
@@ -55,7 +84,7 @@ const Cart: React.FC = () => {
                     <div className="cart-item-info">
                       <h3>{item.product.name}</h3>
                       <p className="item-size">Size: {item.selectedSize || 'N/A'}</p>
-                      <p className="item-price">${item.product.price.toFixed(2)}</p>
+                      <PriceDisplay price={item.product.price} currencyCode={currencyCode} />
                       
                       <div className="cart-controls">
                         <div className="cart-quantity-controls">
@@ -82,7 +111,11 @@ const Cart: React.FC = () => {
                       </div>
                     </div>
                     <div className="cart-line-total">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      <PriceDisplay 
+                        price={item.product.price * item.quantity} 
+                        currencyCode={currencyCode} 
+                        className="line-total-price"
+                      />
                     </div>
                   </motion.div>
                 ))}
@@ -99,16 +132,27 @@ const Cart: React.FC = () => {
                   <div className="summary-details">
                     <div className="summary-line">
                       <span>Subtotal</span>
-                      <span>${totalPrice.toFixed(2)} CAD</span>
+                      <span>{formattedTotal}</span>
                     </div>
+                    {currencyCode !== 'CAD' && (
+                      <div className="summary-line cad-equivalent">
+                        <span>CAD Equivalent</span>
+                        <span>C${totalPriceCAD.toFixed(2)}</span>
+                      </div>
+                    )}
                     <div className="summary-line">
                       <span>Shipping</span>
                       <span>Calculated at checkout</span>
                     </div>
                     <div className="summary-line total">
                       <span>Total</span>
-                      <span>${totalPrice.toFixed(2)} CAD</span>
+                      <span>{formattedTotal}</span>
                     </div>
+                    {currencyCode !== 'CAD' && (
+                      <div className="summary-note payment-note">
+                        <p>You'll be charged C${totalPriceCAD.toFixed(2)} CAD</p>
+                      </div>
+                    )}
                   </div>
                   <p className="summary-note">Taxes and shipping calculated at checkout</p>
                   <Link to="/checkout" className="checkout-button">

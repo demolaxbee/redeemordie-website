@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product } from '../utils/airtable';
+import { formatPrice } from '../utils/formatPrice';
+import { useCurrency } from './CurrencyContext';
 
 interface CartItem {
   product: Product;
@@ -15,6 +17,8 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  totalPriceCAD: number;
+  formattedTotal: string;
   isCartOpen: boolean;        
   toggleCart: () => void;
   closeCart: () => void;
@@ -36,10 +40,32 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return savedCart ? JSON.parse(savedCart) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [formattedTotal, setFormattedTotal] = useState('C$0.00');
+  const { currencyCode } = useCurrency();
 
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
+
+  const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
+  const totalPriceCAD = cartItems.reduce(
+    (total, item) => total + item.product.price * item.quantity,
+    0
+  );
+  const totalPrice = totalPriceCAD; // Keep backward compatibility
+
+  useEffect(() => {
+    const updateFormattedTotal = async () => {
+      if (totalPriceCAD > 0) {
+        const formatted = await formatPrice(totalPriceCAD, currencyCode);
+        setFormattedTotal(formatted);
+      } else {
+        setFormattedTotal(currencyCode === 'CAD' ? 'C$0.00' : '0.00');
+      }
+    };
+    
+    updateFormattedTotal();
+  }, [totalPriceCAD, currencyCode]);
 
   const addToCart = (product: Product, selectedSize?: string) => {
     setCartItems(prevItems => {
@@ -82,12 +108,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartItems([]);
   };
 
-  const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-  const totalPrice = cartItems.reduce(
-    (total, item) => total + item.product.price * item.quantity,
-    0
-  );
-
   const toggleCart = () => {
     setIsCartOpen(prev => !prev);
   };
@@ -104,6 +124,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         totalItems,
         totalPrice,
+        totalPriceCAD,
+        formattedTotal,
         isCartOpen, 
         toggleCart,
         closeCart

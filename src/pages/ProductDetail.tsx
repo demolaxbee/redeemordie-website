@@ -2,11 +2,39 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchProducts, Product } from '../utils/airtable';
 import { useCart } from '../context/CartContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { formatPrice } from '../utils/formatPrice';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import Slider from 'react-slick';
 import '../styles/product-detail.css';
 import { toast } from 'react-toastify';
+
+interface PriceDisplayProps {
+  price: number;
+  currencyCode: string;
+  className?: string;
+}
+
+const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, currencyCode, className = "product-price" }) => {
+  const [formattedPrice, setFormattedPrice] = useState(`C$${price.toFixed(2)}`);
+
+  useEffect(() => {
+    const updatePrice = async () => {
+      try {
+        const formatted = await formatPrice(price, currencyCode);
+        setFormattedPrice(formatted);
+      } catch (error) {
+        console.error('Error formatting price:', error);
+        setFormattedPrice(`C$${price.toFixed(2)}`);
+      }
+    };
+
+    updatePrice();
+  }, [price, currencyCode]);
+
+  return <div className={className}>{formattedPrice}</div>;
+};
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,6 +47,7 @@ const ProductDetail: React.FC = () => {
   const [descriptionOpen, setDescriptionOpen] = useState(false);
   const [sizeChartOpen, setSizeChartOpen] = useState(false);
   const { addToCart } = useCart();
+  const { currencyCode } = useCurrency();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   useEffect(() => {
@@ -99,7 +128,7 @@ const ProductDetail: React.FC = () => {
         <div className="product-info">
           <div className="product-header">
             <h1 className="product-title">{product.name}</h1>
-            <div className="product-price">${product.price}</div>
+            <PriceDisplay price={product.price} currencyCode={currencyCode} />
           </div>
 
           <div className="size-selector">
@@ -160,7 +189,7 @@ const ProductDetail: React.FC = () => {
               </div>
               <div className="product-info">
                 <div className="related-name">{item.name}</div>
-                <div className="related-price">${item.price}</div>
+                <PriceDisplay price={item.price} currencyCode={currencyCode} className="related-price" />
               </div>
             </Link>
           ))}

@@ -28,6 +28,7 @@ import Footer from './components/Footer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { SearchProvider } from './context/SearchContext';
+import { CurrencyProvider } from './context/CurrencyContext';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -46,9 +47,10 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <CartProvider>
-        <SearchProvider>
-          <Router>
+      <CurrencyProvider>
+        <CartProvider>
+          <SearchProvider>
+            <Router>
             <div className="app">
               <Navbar />
               <main>
@@ -77,6 +79,7 @@ const App: React.FC = () => {
           <ToastContainer />
         </SearchProvider>
       </CartProvider>
+    </CurrencyProvider>
     </AuthProvider>
   );
 };

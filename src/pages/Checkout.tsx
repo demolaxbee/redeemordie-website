@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import emailjs from '@emailjs/browser';
 import { useCart } from '../context/CartContext';
+import { useCurrency } from '../context/CurrencyContext';
+import { formatPrice } from '../utils/formatPrice';
 import '../styles/checkout.css';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!); 
@@ -275,7 +277,8 @@ const subdivisions: Record<string, { label: string, options: string[] }> = {
 const CheckoutForm: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
-  const { cartItems, totalPrice } = useCart();
+  const { cartItems, totalPriceCAD, formattedTotal } = useCart();
+  const { currencyCode } = useCurrency();
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -298,9 +301,9 @@ const CheckoutForm: React.FC = () => {
       price: item.product.price,
       qty: item.quantity,
     })),
-    subtotal: totalPrice,
+    subtotal: totalPriceCAD,
     shipping: 0,
-    total: totalPrice,
+    total: totalPriceCAD,
     currency: 'CAD',
   };
 
@@ -349,20 +352,20 @@ const CheckoutForm: React.FC = () => {
       if (paymentResult?.error) throw new Error(paymentResult.error.message);
       if (paymentResult?.paymentIntent?.status !== 'succeeded') throw new Error('Payment not successful');
 
-      // 3. Send order email to admin via EmailJS
-      await emailjs.send(
-        'YOUR_SERVICE_ID', // replace with your EmailJS service ID
-        'YOUR_TEMPLATE_ID', // replace with your EmailJS template ID
-        {
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          address: `${form.address}, ${form.city}, ${subdivision ? subdivision + ', ' : ''}${form.country}, ${form.postal}`,
-          order: orderSummary.items.map(i => `${i.qty}x ${i.name}`).join(', '),
-          total: orderSummary.total,
-        },
-        'YOUR_USER_ID' // replace with your EmailJS public key
-      );
+      // // 3. Send order email to admin via EmailJS
+      // await emailjs.send(
+      //   'YOUR_SERVICE_ID', // replace with your EmailJS service ID
+      //   'YOUR_TEMPLATE_ID', // replace with your EmailJS template ID
+      //   {
+      //     name: form.name,
+      //     email: form.email,
+      //     phone: form.phone,
+      //     address: `${form.address}, ${form.city}, ${subdivision ? subdivision + ', ' : ''}${form.country}, ${form.postal}`,
+      //     order: orderSummary.items.map(i => `${i.qty}x ${i.name}`).join(', '),
+      //     total: orderSummary.total,
+      //   },
+      //   'YOUR_USER_ID' // replace with your EmailJS public key
+      // );
 
       setSuccess(true);
     } catch (err: any) {
@@ -420,7 +423,26 @@ const CheckoutForm: React.FC = () => {
       <input name="postal" type="text" placeholder="Postal Code" value={form.postal} onChange={handleChange} required />
       <h2>Payment</h2>
       <div className="card-element-wrapper">
-        <CardElement options={{ style: { base: { fontSize: '16px' } } }} />
+        <CardElement
+          options={{
+            style: {
+              base: {
+                color: '#ffffff',
+                fontSize: '16px',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                '::placeholder': {
+                  color: '#bbbbbb',
+                },
+                backgroundColor: '#1e1e1e',
+                padding: '12px',
+              },
+              invalid: {
+                color: '#ff4d4f',
+                iconColor: '#ff4d4f',
+              },
+            },
+          }}
+        />
       </div>
       {error && <div className="checkout-error">{error}</div>}
       <button className="checkout-submit" type="submit" disabled={loading || !stripe}>
@@ -432,16 +454,18 @@ const CheckoutForm: React.FC = () => {
 };
 
 const Checkout: React.FC = () => {
-  const { cartItems, totalPrice } = useCart();
+  const { cartItems, totalPriceCAD, formattedTotal } = useCart();
+  const { currencyCode } = useCurrency();
+  
   const orderSummary = {
     items: cartItems.map(item => ({
       name: item.product.name + (item.selectedSize ? ` (Size: ${item.selectedSize})` : ''),
       price: item.product.price,
       qty: item.quantity,
     })),
-    subtotal: totalPrice,
+    subtotal: totalPriceCAD,
     shipping: 0,
-    total: totalPrice,
+    total: totalPriceCAD,
     currency: 'CAD',
   };
 
@@ -457,25 +481,63 @@ const Checkout: React.FC = () => {
           {orderSummary.items.map((item, idx) => (
             <div className="summary-item" key={idx}>
               <span>{item.qty}x {item.name}</span>
-              <span>${item.price.toFixed(2)}</span>
+              <PriceDisplay price={item.price} currencyCode={currencyCode} showAsSpan />
             </div>
           ))}
           <div className="summary-line">
             <span>Subtotal</span>
-            <span>${orderSummary.subtotal.toFixed(2)}</span>
+            <span>{formattedTotal}</span>
           </div>
           <div className="summary-line">
             <span>Shipping</span>
             <span>{orderSummary.shipping === 0 ? 'Free' : `$${orderSummary.shipping.toFixed(2)}`}</span>
           </div>
+          {currencyCode !== 'CAD' && (
+            <div className="summary-line cad-note">
+              <span>CAD Total</span>
+              <span>C${orderSummary.total.toFixed(2)}</span>
+            </div>
+          )}
           <div className="summary-total">
             <span>Total</span>
-            <span>${orderSummary.total.toFixed(2)} {orderSummary.currency}</span>
+            <span>{formattedTotal}</span>
           </div>
+          {currencyCode !== 'CAD' && (
+            <div className="payment-currency-note">
+              <small>You'll be charged C${totalPriceCAD.toFixed(2)} CAD</small>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+};
+
+// PriceDisplay component for checkout
+interface PriceDisplayProps {
+  price: number;
+  currencyCode: string;
+  showAsSpan?: boolean;
+}
+
+const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, currencyCode, showAsSpan = false }) => {
+  const [formattedPrice, setFormattedPrice] = useState(`C$${price.toFixed(2)}`);
+
+  useEffect(() => {
+    const updatePrice = async () => {
+      try {
+        const formatted = await formatPrice(price, currencyCode);
+        setFormattedPrice(formatted);
+      } catch (error) {
+        console.error('Error formatting price:', error);
+        setFormattedPrice(`C$${price.toFixed(2)}`);
+      }
+    };
+
+    updatePrice();
+  }, [price, currencyCode]);
+
+  return showAsSpan ? <span>{formattedPrice}</span> : <p>{formattedPrice}</p>;
 };
 
 export default Checkout; 

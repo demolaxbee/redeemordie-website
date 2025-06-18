@@ -423,6 +423,40 @@
   background-color: #ccc;
 }
 
+/* Currency Selector Styles */
+.currency-selector {
+  margin-right: 10px;
+}
+
+.currency-select {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  color: white;
+  padding: 5px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  min-width: 70px;
+}
+
+.currency-select:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.currency-select:focus {
+  border-color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.currency-select option {
+  background: #1a1a1a;
+  color: white;
+  padding: 5px;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
   .navbar-main-links {
@@ -439,6 +473,16 @@
   
   .cart-sidebar {
     max-width: 320px;
+  }
+  
+  .currency-selector {
+    margin-right: 5px;
+  }
+  
+  .currency-select {
+    font-size: 11px;
+    min-width: 60px;
+    padding: 4px 6px;
   }
 }
 
