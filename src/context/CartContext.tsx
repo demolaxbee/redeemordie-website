@@ -11,7 +11,7 @@ interface CartItem {
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, selectedSize?: string) => void;
+  addToCart: (product: Product, selectedSize?: string) => boolean;
   removeFromCart: (productId: string, selectedSize?: string) => void;
   updateQuantity: (productId: string, quantity: number, selectedSize?: string) => void;
   clearCart: () => void;
@@ -68,6 +68,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [totalPriceCAD, currencyCode]);
 
   const addToCart = (product: Product, selectedSize?: string) => {
+    // Validate product availability
+    const isOutOfStock = !product.sizes || product.sizes.length === 0;
+    
+    if (isOutOfStock) {
+      console.warn('Cannot add out of stock product to cart:', product.name);
+      return false; // Don't add to cart
+    }
+
+    // If product has sizes, validate the selected size
+    if (product.sizes && product.sizes.length > 0) {
+      if (!selectedSize || !product.sizes.includes(selectedSize)) {
+        console.warn('Invalid size selected for product:', product.name, selectedSize);
+        return false; // Don't add to cart
+      }
+    }
+
     setCartItems(prevItems => {
       const existingItem = prevItems.find(
         item => item.product.id === product.id && item.selectedSize === selectedSize
@@ -81,6 +97,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       return [...prevItems, { product, quantity: 1, selectedSize }];
     });
+    
+    return true; // Successfully added to cart
   };
 
   const removeFromCart = (productId: string, selectedSize?: string) => {

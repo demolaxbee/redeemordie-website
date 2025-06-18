@@ -2,33 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchProducts, Product } from '../utils/airtable';
 import { useSearch } from '../context/SearchContext';
-import { useCurrency } from '../context/CurrencyContext';
-import { formatPrice } from '../utils/formatPrice';
-
-interface PriceDisplayProps {
-  price: number;
-  currencyCode: string;
-}
-
-const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, currencyCode }) => {
-  const [formattedPrice, setFormattedPrice] = useState(`C$${price.toFixed(2)}`);
-
-  useEffect(() => {
-    const updatePrice = async () => {
-      try {
-        const formatted = await formatPrice(price, currencyCode);
-        setFormattedPrice(formatted);
-      } catch (error) {
-        console.error('Error formatting price:', error);
-        setFormattedPrice(`C$${price.toFixed(2)}`);
-      }
-    };
-
-    updatePrice();
-  }, [price, currencyCode]);
-
-  return <p className="product-price">{formattedPrice}</p>;
-};
+import ProductCard from '../components/ProductCard';
 
 const Shop: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -36,7 +10,6 @@ const Shop: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   
   const { searchQuery, searchResults, clearSearch } = useSearch();
-  const { currencyCode } = useCurrency();
   
   // Determine which products to display
   const displayProducts = searchQuery.trim() ? searchResults : products;
@@ -95,21 +68,7 @@ const Shop: React.FC = () => {
       <div className="products-grid">
         {displayProducts.length > 0 ? (
           displayProducts.map((product) => (
-            <div className="product-card" key={product.id}>
-              <Link to={`/product/${product.id}`} className="product-link">
-                <div className="product-image">
-                  <img
-                    src={product.imageUrls[0] || '/placeholder-image.jpg'}
-                    alt={product.name}
-                    className="product-img"
-                  />
-                </div>
-                <div className="product-info">
-                  <h2 className="product-title">{product.name}</h2>
-                  <PriceDisplay price={product.price} currencyCode={currencyCode} />
-                </div>
-              </Link>
-            </div>
+            <ProductCard key={product.id} product={product} showAddToCart={false} />
           ))
         ) : searchQuery.trim() ? (
           <div className="no-results">

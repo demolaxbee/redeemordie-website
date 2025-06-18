@@ -57,8 +57,10 @@ const ProductDetail: React.FC = () => {
         const found = products.find((p) => p.id === id);
         setProduct(found || null);
         setAllProducts(products.filter((p) => p.id !== id)); // Exclude current product
-        if (found && (found as any).sizes && (found as any).sizes.length > 0) {
-          setSelectedSize((found as any).sizes[0]);
+        if (found && found.sizes && found.sizes.length > 0) {
+          setSelectedSize(found.sizes[0]);
+        } else {
+          setSelectedSize(''); // No sizes available
         }
       } catch (err) {
         setError('Failed to load product.');
@@ -70,9 +72,27 @@ const ProductDetail: React.FC = () => {
   }, [id]);
 
   const handleAddToCart = () => {
-    if (product) {
-      addToCart(product, selectedSize);
-      toast.success(`${product.name} added to cart!`);
+    if (!product) return;
+
+    // Check if product is out of stock (no sizes available)
+    const isOutOfStock = !product.sizes || product.sizes.length === 0;
+    
+    if (isOutOfStock) {
+      toast.error('This product is currently out of stock.');
+      return;
+    }
+
+    // Check if a valid size is selected
+    if (!selectedSize || !product.sizes?.includes(selectedSize)) {
+      toast.error('Please select a valid size.');
+      return;
+    }
+
+    const success = addToCart(product, selectedSize);
+    if (success) {
+      toast.success(`${product.name} (Size: ${selectedSize}) added to cart!`);
+    } else {
+      toast.error('Failed to add product to cart. Please try again.');
     }
   };  
 
@@ -95,11 +115,14 @@ const ProductDetail: React.FC = () => {
 
   // All possible sizes
   const allSizes: string[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const availableSizes: string[] = (product as any).sizes || [];
+  const availableSizes: string[] = product.sizes || [];
+  const isOutOfStock = availableSizes.length === 0;
   
   const getSizeStatus = (size: string) => {
     return availableSizes.includes(size);
   };
+
+  const isValidSizeSelected = selectedSize && availableSizes.includes(selectedSize);
 
   return (
     <div className="product-detail">
@@ -108,11 +131,13 @@ const ProductDetail: React.FC = () => {
       </div>
       <div className="product-content">
         <div className="product-gallery">
-          <img
-            src={product.imageUrls[activeImageIndex] || '/placeholder-image.jpg'}
-            alt={product.name}
-            className="main-image"
-          />
+          <div className="relative">
+            <img
+              src={product.imageUrls[activeImageIndex] || '/placeholder-image.jpg'}
+              alt={product.name}
+              className="main-image"
+            />
+          </div>
           <div className="thumbnail-row">
             {product.imageUrls.map((url, index) => (
               <img
@@ -127,31 +152,62 @@ const ProductDetail: React.FC = () => {
         </div>
         <div className="product-info">
           <div className="product-header">
-            <h1 className="product-title">{product.name}</h1>
+            <h1 className={`product-title ${isOutOfStock ? 'opacity-70' : ''}`}>{product.name}</h1>
             <PriceDisplay price={product.price} currencyCode={currencyCode} />
+            {isOutOfStock && (
+              <div className="mt-2 text-red-600 font-semibold">
+                This product is currently out of stock
+              </div>
+            )}
           </div>
 
-          <div className="size-selector">
-            <h3>Size</h3>
-            <div className="size-options">
-              {allSizes.map((size) => {
-                const isAvailable = getSizeStatus(size);
-                return (
-                  <button
-                    key={size}
-                    className={`size-button ${selectedSize === size ? 'active' : ''} ${!isAvailable ? 'unavailable' : ''}`}
-                    onClick={() => isAvailable && setSelectedSize(size)}
-                    disabled={!isAvailable}
-                  >
-                    {size}
-                  </button>
-                );
-              })}
+          {!isOutOfStock && (
+            <div className="size-selector">
+              <h3>Size</h3>
+              <div className="size-options">
+                {allSizes.map((size) => {
+                  const isAvailable = getSizeStatus(size);
+                  return (
+                    <button
+                      key={size}
+                      className={`size-button ${selectedSize === size ? 'active' : ''} ${!isAvailable ? 'unavailable opacity-40 cursor-not-allowed' : 'hover:bg-gray-200'}`}
+                      onClick={() => isAvailable && setSelectedSize(size)}
+                      disabled={!isAvailable}
+                      title={!isAvailable ? `Size ${size} is not available` : `Select size ${size}`}
+                    >
+                      {size}
+                      {!isAvailable && (
+                        <span className="text-xs text-gray-500 ml-1">N/A</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {!isValidSizeSelected && availableSizes.length > 0 && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Please select a size to add to cart
+                </p>
+              )}
             </div>
-          </div>
+          )}
 
-          <button className="add-to-cart" onClick={handleAddToCart}>
-            ADD TO CART
+          <button 
+            className={`add-to-cart ${
+              isOutOfStock || !isValidSizeSelected 
+                ? 'opacity-50 cursor-not-allowed bg-gray-400' 
+                : 'hover:bg-gray-800'
+            }`}
+            onClick={handleAddToCart}
+            disabled={isOutOfStock || !isValidSizeSelected}
+            title={
+              isOutOfStock 
+                ? 'Product is out of stock' 
+                : !isValidSizeSelected 
+                ? 'Please select a size' 
+                : 'Add to cart'
+            }
+          >
+            {isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
           </button>
 
           <div className="accordion-section">
@@ -182,17 +238,28 @@ const ProductDetail: React.FC = () => {
       <div className="related-section">
         <h2>You May Also Like</h2>
         <div className="related-products">
-          {allProducts.slice(0, 3).map((item) => (
-            <Link key={item.id} to={`/product/${item.id}`} className="related-item">
-              <div className="image-container">
-                <img src={item.imageUrls[0] || '/placeholder-image.jpg'} alt={item.name} />
-              </div>
-              <div className="product-info">
-                <div className="related-name">{item.name}</div>
-                <PriceDisplay price={item.price} currencyCode={currencyCode} className="related-price" />
-              </div>
-            </Link>
-          ))}
+          {allProducts.slice(0, 3).map((item) => {
+            const itemOutOfStock = !item.sizes || item.sizes.length === 0;
+            return (
+              <Link key={item.id} to={`/product/${item.id}`} className="related-item">
+                <div className="image-container relative">
+                  <img 
+                    src={item.imageUrls[0] || '/placeholder-image.jpg'} 
+                    alt={item.name}
+                  />
+                  {itemOutOfStock && (
+                    <div className="absolute top-1 left-1 bg-red-600 text-white text-xs px-1 py-0.5 rounded text-[10px]">
+                      Out of Stock
+                    </div>
+                  )}
+                </div>
+                <div className="product-info">
+                  <div className={`related-name ${itemOutOfStock ? 'opacity-70' : ''}`}>{item.name}</div>
+                  <PriceDisplay price={item.price} currencyCode={currencyCode} className={`related-price ${itemOutOfStock ? 'opacity-70' : ''}`} />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </div>

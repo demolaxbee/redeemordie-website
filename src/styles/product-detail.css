@@ -139,6 +139,31 @@
   color: #fff;
 }
 
+/* Out of Stock Styles */
+.add-to-cart:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #666 !important;
+  color: #999 !important;
+}
+
+.add-to-cart:disabled:hover {
+  background-color: #666 !important;
+  color: #999 !important;
+}
+
+.size-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: #666;
+  border-color: #333;
+}
+
+.size-button:disabled:hover {
+  border-color: #333;
+  background: transparent;
+}
+
 .accordion-section {
   border-top: 1px solid #333;
   padding-top: 10px;
