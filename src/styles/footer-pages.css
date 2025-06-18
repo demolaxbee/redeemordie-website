@@ -1,0 +1,76 @@
+/* Footer Pages Styles - Privacy Policy & Delivery Returns */
+.privacy-policy,
+.delivery-returns {
+  background-color: #000;
+  color: #fff;
+  font-family: 'Space Mono', monospace;
+  padding: 60px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.privacy-policy h1,
+.delivery-returns h1 {
+  font-size: 32px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+  border-bottom: 2px solid #333;
+  padding-bottom: 15px;
+}
+
+.privacy-policy h2,
+.delivery-returns h2 {
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 30px 0 15px 0;
+  letter-spacing: 1px;
+  color: #fff;
+}
+
+.privacy-policy p,
+.delivery-returns p {
+  font-size: 14px;
+  margin-bottom: 15px;
+  color: #ccc;
+}
+
+.privacy-policy ul,
+.delivery-returns ul {
+  margin: 15px 0;
+  padding-left: 20px;
+}
+
+.privacy-policy li,
+.delivery-returns li {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #ccc;
+}
+
+.privacy-policy strong,
+.delivery-returns strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .privacy-policy,
+  .delivery-returns {
+    padding: 40px 15px;
+  }
+  
+  .privacy-policy h1,
+  .delivery-returns h1 {
+    font-size: 24px;
+  }
+  
+  .privacy-policy h2,
+  .delivery-returns h2 {
+    font-size: 16px;
+  }
+} 

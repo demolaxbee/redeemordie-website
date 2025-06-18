@@ -63,8 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
     <div className={`product-card ${isOutOfStock ? 'out-of-stock' : ''}`}>
       <Link 
         to={`/product/${product.id}`} 
-        className={`product-link ${isOutOfStock ? 'pointer-events-none' : ''}`}
-        onClick={isOutOfStock ? (e) => e.preventDefault() : undefined}
+        className="product-link"
       >
         <div className="product-image relative">
           <img

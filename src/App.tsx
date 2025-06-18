@@ -19,6 +19,8 @@ import Cart from './pages/Cart';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Checkout from './pages/Checkout';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import DeliveryReturns from './components/DeliveryReturns';
 
 // Components
 import Navbar from './components/Navbar';
@@ -62,6 +64,8 @@ const App: React.FC = () => {
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/delivery-returns" element={<DeliveryReturns />} />
                   <Route path="/admin" element={<AdminLogin />} />
                   <Route 
                     path="/admin/dashboard" 

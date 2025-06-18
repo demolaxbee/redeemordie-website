@@ -44,8 +44,8 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string>('');
-  const [descriptionOpen, setDescriptionOpen] = useState(false);
-  const [sizeChartOpen, setSizeChartOpen] = useState(false);
+  const [descriptionOpen, setDescriptionOpen] = useState(true);
+  const [sizeChartOpen, setSizeChartOpen] = useState(true);
   const { addToCart } = useCart();
   const { currencyCode } = useCurrency();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -154,42 +154,32 @@ const ProductDetail: React.FC = () => {
           <div className="product-header">
             <h1 className={`product-title ${isOutOfStock ? 'opacity-70' : ''}`}>{product.name}</h1>
             <PriceDisplay price={product.price} currencyCode={currencyCode} />
-            {isOutOfStock && (
-              <div className="mt-2 text-red-600 font-semibold">
-                This product is currently out of stock
-              </div>
-            )}
           </div>
 
-          {!isOutOfStock && (
-            <div className="size-selector">
-              <h3>Size</h3>
-              <div className="size-options">
-                {allSizes.map((size) => {
-                  const isAvailable = getSizeStatus(size);
-                  return (
-                    <button
-                      key={size}
-                      className={`size-button ${selectedSize === size ? 'active' : ''} ${!isAvailable ? 'unavailable opacity-40 cursor-not-allowed' : 'hover:bg-gray-200'}`}
-                      onClick={() => isAvailable && setSelectedSize(size)}
-                      disabled={!isAvailable}
-                      title={!isAvailable ? `Size ${size} is not available` : `Select size ${size}`}
-                    >
-                      {size}
-                      {!isAvailable && (
-                        <span className="text-xs text-gray-500 ml-1">N/A</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              {!isValidSizeSelected && availableSizes.length > 0 && (
-                <p className="text-sm text-gray-600 mt-2">
-                  Please select a size to add to cart
-                </p>
-              )}
+          <div className="size-selector">
+            <h3>Size</h3>
+            <div className="size-options">
+              {allSizes.map((size) => {
+                const isAvailable = getSizeStatus(size);
+                return (
+                  <button
+                    key={size}
+                    className={`size-button ${selectedSize === size ? 'active' : ''} ${!isAvailable ? 'unavailable opacity-40 cursor-not-allowed' : 'hover:bg-gray-200'}`}
+                    onClick={() => isAvailable && setSelectedSize(size)}
+                    disabled={!isAvailable}
+                    title={!isAvailable ? `Size ${size} is not available` : `Select size ${size}`}
+                  >
+                    {size}
+                  </button>
+                );
+              })}
             </div>
-          )}
+            {!isValidSizeSelected && availableSizes.length > 0 && (
+              <p className="text-sm text-gray-600 mt-2">
+                Please select a size to add to cart
+              </p>
+            )}
+          </div>
 
           <button 
             className={`add-to-cart ${

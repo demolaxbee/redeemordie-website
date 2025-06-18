@@ -3,6 +3,14 @@
   color: #fff;
   font-family: 'Space Mono', monospace;
   padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.breadcrumb {
+  text-align: left;
+  margin-bottom: 40px;
+  padding-left: 10%;
 }
 
 .breadcrumb button {
@@ -12,15 +20,16 @@
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 1px;
-  margin-bottom: 20px;
   cursor: pointer;
 }
 
 .product-content {
   display: grid;
   grid-template-columns: 1fr 400px;
-  gap: 60px;
+  gap: 40px;
   align-items: start;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .product-gallery {
@@ -180,6 +189,8 @@
 .accordion-content {
   padding: 10px 0;
   font-size: 12px;
+  color: #888;
+  opacity: 0.8;
 }
 
 .loading-screen,

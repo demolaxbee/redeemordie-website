@@ -10,6 +10,7 @@ const Footer: React.FC = () => {
         </div>
         
         <div className="footer-right">
+          <Link to="/privacy-policy">Privacy Policy</Link>
           <Link to="/delivery-returns">Delivery & Returns</Link>
           {/* <Link to="/terms">Terms & Conditions</Link> */}
           <span>© {new Date().getFullYear()} - RedeemOrDie | Powered by ROD</span>
