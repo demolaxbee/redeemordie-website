@@ -8,9 +8,13 @@ import { formatPrice } from '../utils/formatPrice';
 import '../styles/checkout.css';
 import { Link, useNavigate } from 'react-router-dom';
 
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!); 
+const BACKEND_URL = process.env.REACT_APP_API_BASE_URL!;
 
-const BACKEND_URL = 'http://localhost:4242'; // Update if your backend runs elsewhere
+if (!process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY) {
+  throw new Error('Stripe configuration missing');
+}
+
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!); 
 
 const countries = [
   { code: "AF", name: "Afghanistan" },

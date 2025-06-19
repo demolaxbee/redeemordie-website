@@ -39,7 +39,7 @@ export async function getUserCurrency(): Promise<UserLocationData> {
     }
     
     const data = await response.json();
-    console.log('GeoIP response:', data);
+
     
     const locationData: UserLocationData = {
       country: data.country_name || DEFAULT_LOCATION.country,
@@ -62,7 +62,6 @@ export async function getUserCurrency(): Promise<UserLocationData> {
     return locationData;
     
   } catch (error) {
-    console.error('Error fetching user location:', error);
     
     // Return cached data if available, otherwise default
     const cachedCountry = Cookies.get('country');

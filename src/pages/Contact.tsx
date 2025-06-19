@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 import { sendContactEmail, ContactFormData } from '../utils/emailService';
+
 
 const Contact: React.FC = () => {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -10,7 +12,6 @@ const Contact: React.FC = () => {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -20,14 +21,77 @@ const Contact: React.FC = () => {
     }));
   };
 
+  const validateEmail = (email: string): boolean => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email.toLowerCase());
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast.error('Name is required! 📝', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return false;
+    }
+    if (!validateEmail(formData.email)) {
+      toast.error('Please enter a valid email address! 📧', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return false;
+    }
+    if (!formData.subject) {
+      toast.error('Please select a subject! 📋', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return false;
+    }
+    if (formData.message.trim().length < 10) {
+      toast.error('Message must be at least 10 characters! ✍️', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
+      return false;
+    }
+    return true;
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) {
+      return;
+    }
     setIsSubmitting(true);
-    setSubmitStatus('idle');
 
     try {
       await sendContactEmail(formData);
-      setSubmitStatus('success');
+      toast.success('🎉 Message sent successfully! We\'ll get back to you soon.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       setFormData({
         name: '',
         email: '',
@@ -35,7 +99,14 @@ const Contact: React.FC = () => {
         message: ''
       });
     } catch (error) {
-      setSubmitStatus('error');
+      toast.error('😞 Failed to send message. Please try again later.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+      });
       console.error('Contact form error:', error);
     } finally {
       setIsSubmitting(false);
@@ -158,26 +229,6 @@ const Contact: React.FC = () => {
               >
                 {isSubmitting ? 'Sending...' : 'Send Message'}
               </motion.button>
-              
-              {submitStatus === 'success' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="success-message"
-                >
-                  Thank you! Your message has been sent successfully.
-                </motion.div>
-              )}
-              
-              {submitStatus === 'error' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="error-message"
-                >
-                  Sorry, there was an error sending your message. Please try again.
-                </motion.div>
-              )}
             </form>
           </motion.div>
         </div>

@@ -8,10 +8,14 @@ export interface Product {
     imageUrls: string[];
     sizes?: string[];
   }
-  
-  const AIRTABLE_TOKEN = process.env.REACT_APP_AIRTABLE_PAT;
-  const BASE_ID = process.env.REACT_APP_AIRTABLE_BASE_ID;  
-  const TABLE_NAME = process.env.REACT_APP_AIRTABLE_TABLE_NAME;
+
+  const AIRTABLE_TOKEN = process.env.REACT_APP_AIRTABLE_PAT!;
+  const BASE_ID = process.env.REACT_APP_AIRTABLE_BASE_ID!;  
+  const TABLE_NAME = process.env.REACT_APP_AIRTABLE_TABLE_NAME!;
+
+  if (!AIRTABLE_TOKEN || !BASE_ID || !TABLE_NAME) {
+    throw new Error('Airtable configuration incomplete');
+  }  
   
   export const fetchProducts = async (): Promise<Product[]> => {
     try {

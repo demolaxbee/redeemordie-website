@@ -11,7 +11,10 @@ interface NewsletterResponse {
 
 export const subscribeToNewsletter = async (subscriber: NewsletterSubscriber): Promise<void> => {
   try {
-    const response = await fetch('http://localhost:4242/api/newsletter/subscribe', {
+    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL!;
+    const url = `${API_BASE_URL}/api/newsletter/subscribe`;
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -21,16 +24,20 @@ export const subscribeToNewsletter = async (subscriber: NewsletterSubscriber): P
       }),
     });
 
+    // Check if we got HTML instead of JSON (error page)
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error('Server returned an invalid response. Please check if the backend server is running.');
+    }
+
     const data: NewsletterResponse = await response.json();
 
     if (!response.ok) {
       throw new Error(data.error || `HTTP error! status: ${response.status}`);
     }
 
-    // Success
-    console.log('Successfully subscribed to newsletter:', data.message);
   } catch (error) {
-    console.error('Newsletter subscription error:', error);
     if (error instanceof Error) {
       throw new Error(`Failed to subscribe: ${error.message}`);
     }

@@ -6,6 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+    
     <meta
       name="description"
       content="RedeemOrDie - Where Style Meets Street. Premium streetwear and urban fashion."
@@ -26,6 +27,32 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
     <title>RedeemOrDie</title>
+    <!-- ADD: Security headers -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:;">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block"> -->
+
+    <!-- <meta http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self' https:;
+        style-src 'self' 'unsafe-inline' https:;
+        img-src 'self' data: https:;
+        font-src 'self' https:;
+        connect-src 'self' http://localhost:4242 https: https://api.emailjs.com https://v6.exchangerate-api.com https://api.brevo.com;
+      "> -->
+
+      <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.gstatic.com https://www.google-analytics.com https://apis.google.com;
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        frame-src https://js.stripe.com https://hooks.stripe.com https://redeemordie-4651e.firebaseapp.com;
+        connect-src 'self' http://localhost:4242 https://api.airtable.com https://api.emailjs.com https://api.stripe.com https://v6.exchangerate-api.com https://api.brevo.com https://ipapi.co https://firestore.googleapis.com https://identitytoolkit.googleapis.com;
+        img-src 'self' data: https:;
+      ">
+ 
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

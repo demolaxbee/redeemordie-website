@@ -1,140 +1,113 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const Stripe = require('stripe');
 const NodeCache = require('node-cache');
-require('dotenv').config();
+const rateLimit = require('express-rate-limit');
+const dotenv = require('dotenv');
+const axios = require('axios');
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
-const cache = new NodeCache({ stdTTL: 43200 }); // 12 hours cache
+const cache = new NodeCache({ stdTTL: 43200 }); // 12-hour TTL
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+// Set up security headers
+app.use(helmet());
+
+// Trust proxy for platforms like Render
+app.set('trust proxy', 1);
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests from this IP, please try again later."
+});
+app.use(limiter);
+
+// JSON body parsing
 app.use(express.json());
 
+// CORS configuration
+const allowedOrigins = [process.env.FRONTEND_URL];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true
+}));
+
+// Stripe Payment Intent
 app.post('/create-payment-intent', async (req, res) => {
   const { amount, currency } = req.body;
+  if (!amount || !currency) {
+    return res.status(400).json({ error: 'Amount and currency required' });
+  }
   try {
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency,
-    });
+    const paymentIntent = await stripe.paymentIntents.create({ amount, currency });
     res.send({ clientSecret: paymentIntent.client_secret });
   } catch (err) {
-    console.error("Stripe PaymentIntent Error:", err);
-    res.status(500).json({ error: err.message });
+    console.error("Stripe error:", err);
+    res.status(500).json({ error: 'Payment failed' });
   }
 });
 
-// Newsletter subscription endpoint
+// Newsletter via Brevo
 app.post('/api/newsletter/subscribe', async (req, res) => {
   const { email } = req.body;
-  
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
-  }
+  if (!email) return res.status(400).json({ error: 'Email is required' });
 
   const apiKey = process.env.BREVO_API_KEY;
-  
-  if (!apiKey) {
-    console.error('Brevo API key not configured');
-    return res.status(500).json({ error: 'Newsletter service not configured' });
-  }
+  if (!apiKey) return res.status(500).json({ error: 'Brevo API not configured' });
 
   try {
-    const response = await fetch('https://api.brevo.com/v3/contacts', {
-      method: 'POST',
+    const response = await axios.post('https://api.brevo.com/v3/contacts', {
+      email,
+      updateEnabled: true
+    }, {
       headers: {
         'accept': 'application/json',
         'api-key': apiKey,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        email: email,
-        updateEnabled: true, // Update contact if it already exists
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      // Handle specific Brevo errors
-      if (response.status === 400 && data.message?.includes('already exists')) {
-        // Contact already exists, consider this a success
-        return res.json({ success: true, message: 'Successfully subscribed to newsletter' });
+        'content-type': 'application/json'
       }
-      throw new Error(data.message || `HTTP error! status: ${response.status}`);
-    }
-
-    // Success - contact created or updated
-    console.log('Newsletter subscription successful:', data);
-    res.json({ success: true, message: 'Successfully subscribed to newsletter' });
-    
-  } catch (error) {
-    console.error('Newsletter subscription error:', error);
-    res.status(500).json({ 
-      error: 'Failed to subscribe to newsletter. Please try again.',
-      details: error.message 
     });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Newsletter error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Subscription failed' });
   }
 });
 
-// Exchange rate API endpoint
+// Exchange Rate API with caching
 app.get('/api/rates', async (req, res) => {
   const { from = 'CAD', to } = req.query;
-  
-  if (!to) {
-    return res.status(400).json({ error: 'Target currency (to) is required' });
-  }
-
-  // If converting to the same currency, return 1
-  if (from === to) {
-    return res.json({ rate: 1, from, to, cached: false });
-  }
+  if (!to) return res.status(400).json({ error: 'Target currency required' });
+  if (from === to) return res.json({ rate: 1, from, to });
 
   const cacheKey = `${from}_${to}`;
-  
+  const cached = cache.get(cacheKey);
+  if (cached) return res.json({ rate: cached, from, to, cached: true });
+
+  const apiKey = process.env.EXCHANGE_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'Exchange API key missing' });
+
   try {
-    // Check cache first
-    const cachedRate = cache.get(cacheKey);
-    if (cachedRate) {
-      return res.json({ rate: cachedRate, from, to, cached: true });
-    }
-
-    // Fetch from exchange rate API
-    const apiKey = process.env.EXCHANGE_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Exchange API key not configured' });
-    }
-
-    const response = await fetch(
-      `https://v6.exchangerate-api.com/v6/${apiKey}/pair/${from}/${to}`
-    );
-    
-    if (!response.ok) {
-      throw new Error(`Exchange API responded with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    
-    if (data.result !== 'success') {
-      throw new Error(`Exchange API error: ${data['error-type'] || 'Unknown error'}`);
-    }
-
-    const rate = data.conversion_rate;
-    
-    // Cache the rate for 12 hours
+    const response = await axios.get(`https://v6.exchangerate-api.com/v6/${apiKey}/pair/${from}/${to}`);
+    const rate = response.data.conversion_rate;
     cache.set(cacheKey, rate);
-    
     res.json({ rate, from, to, cached: false });
-    
   } catch (error) {
-    console.error('Exchange rate fetch error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch exchange rate',
-      details: error.message 
-    });
+    console.error('Exchange rate error:', error);
+    res.status(500).json({ error: 'Rate lookup failed' });
   }
 });
 
+// Start the server
 const PORT = process.env.PORT || 4242;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
