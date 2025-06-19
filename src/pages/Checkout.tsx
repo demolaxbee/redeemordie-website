@@ -278,7 +278,13 @@ const subdivisions: Record<string, { label: string, options: string[] }> = {
 const CheckoutForm: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
-  const { cartItems, totalPriceCAD, formattedTotal } = useCart();
+  const { 
+    cartItems, 
+    subtotalCAD,
+    taxCAD,
+    shippingCAD,
+    totalPriceCAD 
+  } = useCart();
   const { currencyCode } = useCurrency();
   const [form, setForm] = useState({
     name: '',
@@ -295,15 +301,16 @@ const CheckoutForm: React.FC = () => {
   const [subdivision, setSubdivision] = useState('');
   const hasSubdivision = !!subdivisions[form.country];
 
-  // Real order summary from cart context
+  // Real order summary from cart context with new pricing structure
   const orderSummary = {
     items: cartItems.map(item => ({
       name: item.product.name + (item.selectedSize ? ` (Size: ${item.selectedSize})` : ''),
       price: item.product.price,
       qty: item.quantity,
     })),
-    subtotal: totalPriceCAD,
-    shipping: 0,
+    subtotal: subtotalCAD,
+    tax: taxCAD,
+    shipping: shippingCAD,
     total: totalPriceCAD,
     currency: 'CAD',
   };

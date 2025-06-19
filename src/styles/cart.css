@@ -290,8 +290,12 @@
     scale: 0.9;
   }
 
-  .total-price {
-    font-size: 20px;
+  .summary-total {
+    font-size: 16px;
+  }
+  
+  .summary-line {
+    font-size: 12px;
   }
 }
 
