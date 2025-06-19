@@ -5,6 +5,7 @@ import './styles/navbar.css';
 import './styles/footer.css';
 import './styles/shop.css';
 import './styles/admin.css';
+import './styles/thank-you.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
@@ -19,6 +20,7 @@ import Cart from './pages/Cart';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Checkout from './pages/Checkout';
+import ThankYou from './pages/ThankYou';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import DeliveryReturns from './components/DeliveryReturns';
 
@@ -64,6 +66,7 @@ const App: React.FC = () => {
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/thank-you" element={<ThankYou />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/delivery-returns" element={<DeliveryReturns />} />
                   <Route path="/admin" element={<AdminLogin />} />

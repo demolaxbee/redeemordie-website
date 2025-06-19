@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { formatPrice } from '../utils/formatPrice';
 import '../styles/checkout.css';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!); 
 
@@ -278,12 +278,14 @@ const subdivisions: Record<string, { label: string, options: string[] }> = {
 const CheckoutForm: React.FC = () => {
   const stripe = useStripe();
   const elements = useElements();
+  const navigate = useNavigate();
   const { 
     cartItems, 
     subtotalCAD,
     taxCAD,
     shippingCAD,
-    totalPriceCAD 
+    totalPriceCAD,
+    clearCart
   } = useCart();
   const { currencyCode } = useCurrency();
   const [form, setForm] = useState({
@@ -297,7 +299,6 @@ const CheckoutForm: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [subdivision, setSubdivision] = useState('');
   const hasSubdivision = !!subdivisions[form.country];
 
@@ -360,24 +361,27 @@ const CheckoutForm: React.FC = () => {
       if (paymentResult?.error) throw new Error(paymentResult.error.message);
       if (paymentResult?.paymentIntent?.status !== 'succeeded') throw new Error('Payment not successful');
 
-      // // 3. Send order email to admin via EmailJS
-      // await emailjs.send(
-      //   'YOUR_SERVICE_ID', // replace with your EmailJS service ID
-      //   'YOUR_TEMPLATE_ID', // replace with your EmailJS template ID
-      //   {
-      //     name: form.name,
-      //     email: form.email,
-      //     phone: form.phone,
-      //     address: `${form.address}, ${form.city}, ${subdivision ? subdivision + ', ' : ''}${form.country}, ${form.postal}`,
-      //     order: orderSummary.items.map(i => `${i.qty}x ${i.name}`).join(', '),
-      //     total: orderSummary.total,
-      //   },
-      //   'YOUR_USER_ID' // replace with your EmailJS public key
-      // );
+      // 3. Send order email to admin via EmailJS
+      await emailjs.send(
+        process.env.REACT_APP_EMAILJS_SERVICE_ID!,
+        process.env.REACT_APP_EMAILJS_ORDER_TEMPLATE_ID!,
+        {
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          address: `${form.address}, ${form.city}, ${subdivision ? subdivision + ', ' : ''}${form.country}, ${form.postal}`,
+          order: orderSummary.items.map(i => `${i.qty}x ${i.name}`).join(', '),
+          total: orderSummary.total,
+        },
+        process.env.REACT_APP_EMAILJS_USER_ID
+      );
 
-      setSuccess(true);
+      // Clear the cart after successful payment
+      clearCart();
+      // Redirect to thank you page
+      navigate('/thank-you');
     } catch (err: any) {
-      setError(err.message || 'Payment failed');
+      setError(err.message || 'Payment failed, please try again.');
     } finally {
       setLoading(false);
     }
@@ -456,7 +460,7 @@ const CheckoutForm: React.FC = () => {
       <button className="checkout-submit" type="submit" disabled={loading || !stripe}>
         {loading ? 'Processing...' : 'Pay Now'}
       </button>
-      {success && <div className="checkout-success">Payment successful! Thank you for your order.</div>}
+
     </form>
   );
 };

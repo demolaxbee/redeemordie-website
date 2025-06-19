@@ -82,14 +82,6 @@ const Contact: React.FC = () => {
               <p>+1 (306) 716-3574</p>
             </div>
             <div className="info-item">
-              <h3>Address</h3>
-              <p>
-                1015 13th Street East<br />
-                Saskatoon, Saskatchewan S7H0B8<br />
-                Canada
-              </p>
-            </div>
-            <div className="info-item">
               <h3>Social Media</h3>
               <div className="social-links">
                 <a href="https://www.instagram.com/redeemordie" target="_blank" rel="noopener noreferrer">Instagram</a>
