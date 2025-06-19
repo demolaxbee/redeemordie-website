@@ -25,6 +25,59 @@ app.post('/create-payment-intent', async (req, res) => {
   }
 });
 
+// Newsletter subscription endpoint
+app.post('/api/newsletter/subscribe', async (req, res) => {
+  const { email } = req.body;
+  
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  const apiKey = process.env.BREVO_API_KEY;
+  
+  if (!apiKey) {
+    console.error('Brevo API key not configured');
+    return res.status(500).json({ error: 'Newsletter service not configured' });
+  }
+
+  try {
+    const response = await fetch('https://api.brevo.com/v3/contacts', {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+        'api-key': apiKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        updateEnabled: true, // Update contact if it already exists
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      // Handle specific Brevo errors
+      if (response.status === 400 && data.message?.includes('already exists')) {
+        // Contact already exists, consider this a success
+        return res.json({ success: true, message: 'Successfully subscribed to newsletter' });
+      }
+      throw new Error(data.message || `HTTP error! status: ${response.status}`);
+    }
+
+    // Success - contact created or updated
+    console.log('Newsletter subscription successful:', data);
+    res.json({ success: true, message: 'Successfully subscribed to newsletter' });
+    
+  } catch (error) {
+    console.error('Newsletter subscription error:', error);
+    res.status(500).json({ 
+      error: 'Failed to subscribe to newsletter. Please try again.',
+      details: error.message 
+    });
+  }
+});
+
 // Exchange rate API endpoint
 app.get('/api/rates', async (req, res) => {
   const { from = 'CAD', to } = req.query;

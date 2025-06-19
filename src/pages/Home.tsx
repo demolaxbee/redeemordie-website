@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { subscribeToNewsletter } from '../utils/newsletterService';
 import backgroundImage from './background.png';
 // import { sendNewsletterEmail } from '../utils/emailService';
 
@@ -19,22 +20,22 @@ const Home: React.FC = () => {
     setIsSubmitting(true);
     setSubmitError(false);
 
-    // try {
-    //   await sendNewsletterEmail({ email });
-    //   setIsSubmitted(true);
-    //   setEmail('');
-    //   setTimeout(() => {
-    //     setIsSubmitted(false);
-    //   }, 3000);
-    // } catch (error) {
-    //   setSubmitError(true);
-    //   console.error('Newsletter signup error:', error);
-    //   setTimeout(() => {
-    //     setSubmitError(false);
-    //   }, 3000);
-    // } finally {
-    //   setIsSubmitting(false);
-    // }
+    try {
+      await subscribeToNewsletter({ email });
+      setIsSubmitted(true);
+      setEmail('');
+      setTimeout(() => {
+        setIsSubmitted(false);
+      }, 3000);
+    } catch (error) {
+      setSubmitError(true);
+      console.error('Newsletter signup error:', error);
+      setTimeout(() => {
+        setSubmitError(false);
+      }, 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
