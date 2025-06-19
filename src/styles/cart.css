@@ -206,20 +206,7 @@
   color: #fff;
 }
 
-/* Cart Total */
-.cart-total {
-  text-align: center;
-  margin-bottom: 40px;
-  padding: 20px 0;
-  border-top: 1px solid #222;
-  border-bottom: 1px solid #222;
-}
 
-.total-price {
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-}
 
 /* Order Note */
 .order-note-section {
@@ -306,4 +293,46 @@
   .total-price {
     font-size: 20px;
   }
+}
+
+/* Cart Summary */
+.cart-summary {
+  margin-bottom: 40px;
+  padding: 20px 0;
+  border-top: 1px solid #222;
+  border-bottom: 1px solid #222;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #999;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 0;
+  margin-top: 15px;
+  border-top: 1px solid #333;
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.currency-note {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.currency-note p {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
 }

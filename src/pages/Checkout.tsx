@@ -455,7 +455,17 @@ const CheckoutForm: React.FC = () => {
 };
 
 const Checkout: React.FC = () => {
-  const { cartItems, totalPriceCAD, formattedTotal } = useCart();
+  const { 
+    cartItems, 
+    subtotalCAD,
+    taxCAD,
+    shippingCAD,
+    totalPriceCAD, 
+    formattedSubtotal,
+    formattedTax,
+    formattedShipping,
+    formattedTotal 
+  } = useCart();
   const { currencyCode } = useCurrency();
 
   if (cartItems.length === 0) {
@@ -506,9 +516,29 @@ const Checkout: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <div className="summary-total">
-                  <span>Total</span>
-                  <PriceDisplay price={totalPriceCAD} currencyCode={currencyCode} showAsSpan={true} />
+                
+                <div className="pricing-breakdown">
+                  <div className="breakdown-line">
+                    <span>Subtotal</span>
+                    <span>{formattedSubtotal}</span>
+                  </div>
+                  <div className="breakdown-line">
+                    <span>Tax (2%)</span>
+                    <span>{formattedTax}</span>
+                  </div>
+                  <div className="breakdown-line">
+                    <span>Shipping</span>
+                    <span>{formattedShipping}</span>
+                  </div>
+                  <div className="summary-total">
+                    <span>Total</span>
+                    <span>{formattedTotal}</span>
+                  </div>
+                  {currencyCode !== 'CAD' && (
+                    <div className="currency-note">
+                      <p>You'll be charged C${totalPriceCAD.toFixed(2)} CAD</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

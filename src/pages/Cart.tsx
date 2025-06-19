@@ -33,7 +33,19 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, currencyCode, classN
 };
 
 const Cart: React.FC = () => {
-  const { cartItems, updateQuantity, removeFromCart, totalPriceCAD, formattedTotal } = useCart();
+  const { 
+    cartItems, 
+    updateQuantity, 
+    removeFromCart, 
+    subtotalCAD,
+    taxCAD,
+    shippingCAD,
+    totalPriceCAD, 
+    formattedSubtotal,
+    formattedTax,
+    formattedShipping,
+    formattedTotal 
+  } = useCart();
   const { currencyCode } = useCurrency();
   const [orderNote, setOrderNote] = useState('');
 
@@ -117,8 +129,28 @@ const Cart: React.FC = () => {
                 ))}
               </div>
 
-              <div className="cart-total">
-                <PriceDisplay price={totalPriceCAD} currencyCode={currencyCode} className="total-price" />
+              <div className="cart-summary">
+                <div className="summary-line">
+                  <span>Subtotal</span>
+                  <span>{formattedSubtotal}</span>
+                </div>
+                <div className="summary-line">
+                  <span>Tax (2%)</span>
+                  <span>{formattedTax}</span>
+                </div>
+                <div className="summary-line">
+                  <span>Shipping</span>
+                  <span>{formattedShipping}</span>
+                </div>
+                <div className="summary-total">
+                  <span>Total</span>
+                  <span>{formattedTotal}</span>
+                </div>
+                {currencyCode !== 'CAD' && (
+                  <div className="currency-note">
+                    <p>You'll be charged C${totalPriceCAD.toFixed(2)} CAD</p>
+                  </div>
+                )}
               </div>
 
               <div className="order-note-section">

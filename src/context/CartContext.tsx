@@ -16,8 +16,14 @@ interface CartContextType {
   updateQuantity: (productId: string, quantity: number, selectedSize?: string) => void;
   clearCart: () => void;
   totalItems: number;
-  totalPrice: number;
+  subtotalCAD: number;
+  taxCAD: number;
+  shippingCAD: number;
   totalPriceCAD: number;
+  totalPrice: number;
+  formattedSubtotal: string;
+  formattedTax: string;
+  formattedShipping: string;
   formattedTotal: string;
   isCartOpen: boolean;        
   toggleCart: () => void;
@@ -40,7 +46,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return savedCart ? JSON.parse(savedCart) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [formattedTotal, setFormattedTotal] = useState('C$0.00');
+  const [formattedSubtotal, setFormattedSubtotal] = useState('C$0.00');
+  const [formattedTax, setFormattedTax] = useState('C$0.00');
+  const [formattedShipping, setFormattedShipping] = useState('C$25.00');
+  const [formattedTotal, setFormattedTotal] = useState('C$25.00');
   const { currencyCode } = useCurrency();
 
   useEffect(() => {
@@ -48,24 +57,58 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [cartItems]);
 
   const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-  const totalPriceCAD = cartItems.reduce(
+  
+  // Calculate subtotal (sum of all items)
+  const subtotalCAD = cartItems.reduce(
     (total, item) => total + item.product.price * item.quantity,
     0
   );
+  
+  // Calculate tax (2% of subtotal)
+  const taxCAD = subtotalCAD * 0.02;
+  
+  // Shipping is $25 CAD
+  const shippingCAD = cartItems.length > 0 ? 25.00 : 0;
+  
+  // Calculate total (subtotal + tax + shipping)
+  const totalPriceCAD = subtotalCAD + taxCAD + shippingCAD;
   const totalPrice = totalPriceCAD; // Keep backward compatibility
 
   useEffect(() => {
-    const updateFormattedTotal = async () => {
-      if (totalPriceCAD > 0) {
-        const formatted = await formatPrice(totalPriceCAD, currencyCode);
-        setFormattedTotal(formatted);
-      } else {
-        setFormattedTotal(currencyCode === 'CAD' ? 'C$0.00' : '0.00');
+    const updateFormattedPrices = async () => {
+      try {
+        if (subtotalCAD > 0) {
+          const formattedSub = await formatPrice(subtotalCAD, currencyCode);
+          const formattedTaxAmount = await formatPrice(taxCAD, currencyCode);
+          const formattedShip = await formatPrice(shippingCAD, currencyCode);
+          const formattedTot = await formatPrice(totalPriceCAD, currencyCode);
+          
+          setFormattedSubtotal(formattedSub);
+          setFormattedTax(formattedTaxAmount);
+          setFormattedShipping(formattedShip);
+          setFormattedTotal(formattedTot);
+        } else {
+          // Empty cart - only show zero values
+          const zeroValue = currencyCode === 'CAD' ? 'C$0.00' : '0.00';
+          const shippingValue = currencyCode === 'CAD' ? 'C$0.00' : '0.00';
+          
+          setFormattedSubtotal(zeroValue);
+          setFormattedTax(zeroValue);
+          setFormattedShipping(shippingValue);
+          setFormattedTotal(zeroValue);
+        }
+      } catch (error) {
+        console.error('Error formatting prices:', error);
+        // Fallback to CAD values
+        setFormattedSubtotal(`C$${subtotalCAD.toFixed(2)}`);
+        setFormattedTax(`C$${taxCAD.toFixed(2)}`);
+        setFormattedShipping(`C$${shippingCAD.toFixed(2)}`);
+        setFormattedTotal(`C$${totalPriceCAD.toFixed(2)}`);
       }
     };
     
-    updateFormattedTotal();
-  }, [totalPriceCAD, currencyCode]);
+    updateFormattedPrices();
+  }, [subtotalCAD, taxCAD, shippingCAD, totalPriceCAD, currencyCode]);
 
   const addToCart = (product: Product, selectedSize?: string) => {
     // Validate product availability
@@ -141,8 +184,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateQuantity,
         clearCart,
         totalItems,
-        totalPrice,
+        subtotalCAD,
+        taxCAD,
+        shippingCAD,
         totalPriceCAD,
+        totalPrice,
+        formattedSubtotal,
+        formattedTax,
+        formattedShipping,
         formattedTotal,
         isCartOpen, 
         toggleCart,
