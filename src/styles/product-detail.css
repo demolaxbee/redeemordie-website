@@ -8,9 +8,12 @@
 }
 
 .breadcrumb {
-  text-align: left;
+  text-align: left !important;
   margin-bottom: 40px;
-  padding-left: 10%;
+  padding-left: 0px !important;
+  margin-left: 0px !important;
+  display: flex !important;
+  justify-content: flex-start !important;
 }
 
 .breadcrumb button {
