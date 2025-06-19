@@ -29,72 +29,74 @@ const PriceDisplay: React.FC<PriceDisplayProps> = ({ price, currencyCode, classN
     updatePrice();
   }, [price, currencyCode]);
 
-  return <p className={className || 'item-price'}>{formattedPrice}</p>;
+  return <span className={className || 'item-price'}>{formattedPrice}</span>;
 };
 
 const Cart: React.FC = () => {
   const { cartItems, updateQuantity, removeFromCart, totalPriceCAD, formattedTotal } = useCart();
   const { currencyCode } = useCurrency();
+  const [orderNote, setOrderNote] = useState('');
 
   return (
     <div className="cart-page">
       <div className="cart-container">
         <div className="breadcrumb">
-          <Link to="/shop">HOME</Link> / CART
+          <Link to="/">HOME</Link> / CART
         </div>
 
         <AnimatePresence>
           {cartItems.length === 0 ? (
             <motion.div 
-              className="empty-cart glass"
+              className="empty-cart"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <h2>Your cart is empty</h2>
-              <p>Looks like you haven't added anything to your cart yet.</p>
-              <Link to="/shop" className="continue-shopping-btn">
-                Continue Shopping
+              <h1>Your cart is empty</h1>
+              <Link to="/shop" className="shop-products-btn">
+                Shop our products
               </Link>
             </motion.div>
           ) : (
             <motion.div 
-              className="cart-grid"
+              className="cart-content"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <div className="cart-list">
+              <div className="cart-items">
                 {cartItems.map((item) => (
                   <motion.div 
-                    className="cart-item glass"
-                    key={item.product.id}
+                    className="cart-item"
+                    key={`${item.product.id}-${item.selectedSize}`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     layout
                   >
-                    <div className="cart-item-image-container">
+                    <div className="cart-item-image">
                       <img
                         src={item.product.imageUrls?.[0] || '/placeholder-image.jpg'}
                         alt={item.product.name}
-                        className="cart-item-image"
                       />
                     </div>
-                    <div className="cart-item-info">
-                      <h3>{item.product.name}</h3>
-                      <p className="item-size">Size: {item.selectedSize || 'N/A'}</p>
-                      <PriceDisplay price={item.product.price} currencyCode={currencyCode} />
+                    <div className="cart-item-details">
+                      <div className="item-info">
+                        <h3 className="item-name">{item.product.name}</h3>
+                        <p className="item-size">{item.selectedSize || 'N/A'}</p>
+                        <PriceDisplay price={item.product.price} currencyCode={currencyCode} className="item-price" />
+                      </div>
                       
-                      <div className="cart-controls">
-                        <div className="cart-quantity-controls">
+                      <div className="item-controls">
+                        <div className="quantity-controls">
                           <button 
                             onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedSize)}
                             className="quantity-btn"
+                            disabled={item.quantity <= 1}
                           >
                             −
                           </button>
-                          <span>{item.quantity}</span>
+                          <span className="quantity">{item.quantity}</span>
                           <button 
                             onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedSize)}
                             className="quantity-btn"
@@ -102,63 +104,37 @@ const Cart: React.FC = () => {
                             +
                           </button>
                         </div>
+                        
                         <button 
                           className="remove-btn" 
                           onClick={() => removeFromCart(item.product.id, item.selectedSize)}
                         >
-                          Remove
+                          REMOVE
                         </button>
                       </div>
-                    </div>
-                    <div className="cart-line-total">
-                      <PriceDisplay 
-                        price={item.product.price * item.quantity} 
-                        currencyCode={currencyCode} 
-                        className="line-total-price"
-                      />
                     </div>
                   </motion.div>
                 ))}
               </div>
 
-              <div className="cart-summary glass">
-                <h3>Order Summary</h3>
-                <div className="summary-content">
-                  <textarea 
-                    className="note-box" 
-                    placeholder="Add Order Note (optional)"
-                    rows={4}
-                  />
-                  <div className="summary-details">
-                    <div className="summary-line">
-                      <span>Subtotal</span>
-                      <span>{formattedTotal}</span>
-                    </div>
-                    {currencyCode !== 'CAD' && (
-                      <div className="summary-line cad-equivalent">
-                        <span>CAD Equivalent</span>
-                        <span>C${totalPriceCAD.toFixed(2)}</span>
-                      </div>
-                    )}
-                    <div className="summary-line">
-                      <span>Shipping</span>
-                      <span>Calculated at checkout</span>
-                    </div>
-                    <div className="summary-line total">
-                      <span>Total</span>
-                      <span>{formattedTotal}</span>
-                    </div>
-                    {currencyCode !== 'CAD' && (
-                      <div className="summary-note payment-note">
-                        <p>You'll be charged C${totalPriceCAD.toFixed(2)} CAD</p>
-                      </div>
-                    )}
-                  </div>
-                  <p className="summary-note">Taxes and shipping calculated at checkout</p>
-                  <Link to="/checkout" className="checkout-button">
-                    Proceed to Checkout
-                  </Link>
-                </div>
+              <div className="cart-total">
+                <PriceDisplay price={totalPriceCAD} currencyCode={currencyCode} className="total-price" />
+              </div>
+
+              <div className="order-note-section">
+                <textarea 
+                  className="order-note-input" 
+                  placeholder="Add Order Note"
+                  value={orderNote}
+                  onChange={(e) => setOrderNote(e.target.value)}
+                  rows={3}
+                />
+              </div>
+
+              <div className="cart-actions">
+                <Link to="/checkout" className="checkout-btn">
+                  CHECKOUT
+                </Link>
               </div>
             </motion.div>
           )}

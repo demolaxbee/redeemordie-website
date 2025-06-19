@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { formatPrice } from '../utils/formatPrice';
 import '../styles/checkout.css';
+import { Link } from 'react-router-dom';
 
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY!); 
 
@@ -456,60 +457,65 @@ const CheckoutForm: React.FC = () => {
 const Checkout: React.FC = () => {
   const { cartItems, totalPriceCAD, formattedTotal } = useCart();
   const { currencyCode } = useCurrency();
-  
-  const orderSummary = {
-    items: cartItems.map(item => ({
-      name: item.product.name + (item.selectedSize ? ` (Size: ${item.selectedSize})` : ''),
-      price: item.product.price,
-      qty: item.quantity,
-    })),
-    subtotal: totalPriceCAD,
-    shipping: 0,
-    total: totalPriceCAD,
-    currency: 'CAD',
-  };
 
-  return (
-    <div className="checkout-page">
-      <div className="checkout-main">
-        <Elements stripe={stripePromise}>
-          <CheckoutForm />
-        </Elements>
-      </div>
-      <div className="checkout-summary">
-        <div className="summary-box">
-          {orderSummary.items.map((item, idx) => (
-            <div className="summary-item" key={idx}>
-              <span>{item.qty}x {item.name}</span>
-              <PriceDisplay price={item.price} currencyCode={currencyCode} showAsSpan />
-            </div>
-          ))}
-          <div className="summary-line">
-            <span>Subtotal</span>
-            <span>{formattedTotal}</span>
+  if (cartItems.length === 0) {
+    return (
+      <div className="checkout-page">
+        <div className="checkout-container">
+          <div className="breadcrumb">
+            <Link to="/">HOME</Link> / <Link to="/cart">CART</Link> / CHECKOUT
           </div>
-          <div className="summary-line">
-            <span>Shipping</span>
-            <span>{orderSummary.shipping === 0 ? 'Free' : `$${orderSummary.shipping.toFixed(2)}`}</span>
+          <div className="empty-checkout">
+            <h1>Your cart is empty</h1>
+            <Link to="/shop" className="shop-btn">Shop our products</Link>
           </div>
-          {currencyCode !== 'CAD' && (
-            <div className="summary-line cad-note">
-              <span>CAD Total</span>
-              <span>C${orderSummary.total.toFixed(2)}</span>
-            </div>
-          )}
-          <div className="summary-total">
-            <span>Total</span>
-            <span>{formattedTotal}</span>
-          </div>
-          {currencyCode !== 'CAD' && (
-            <div className="payment-currency-note">
-              <small>You'll be charged C${totalPriceCAD.toFixed(2)} CAD</small>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <Elements stripe={stripePromise}>
+      <div className="checkout-page">
+        <div className="checkout-container">
+          <div className="breadcrumb">
+            <Link to="/">HOME</Link> / <Link to="/cart">CART</Link> / CHECKOUT
+          </div>
+          
+          <div className="checkout-content">
+            <div className="checkout-form-section">
+              <CheckoutForm />
+            </div>
+            
+            <div className="checkout-summary-section">
+              <div className="order-summary">
+                <h2>Order Summary</h2>
+                <div className="summary-items">
+                  {cartItems.map((item) => (
+                    <div className="summary-item" key={`${item.product.id}-${item.selectedSize}`}>
+                      <div className="item-details">
+                        <span className="item-name">{item.product.name}</span>
+                        <span className="item-size">Size: {item.selectedSize}</span>
+                        <span className="item-quantity">Qty: {item.quantity}</span>
+                      </div>
+                      <PriceDisplay 
+                        price={item.product.price * item.quantity} 
+                        currencyCode={currencyCode} 
+                        showAsSpan={true}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="summary-total">
+                  <span>Total</span>
+                  <PriceDisplay price={totalPriceCAD} currencyCode={currencyCode} showAsSpan={true} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Elements>
   );
 };
 
