@@ -8,7 +8,7 @@ import { formatPrice } from '../utils/formatPrice';
 import '../styles/checkout.css';
 import { Link, useNavigate } from 'react-router-dom';
 
-const BACKEND_URL = process.env.REACT_APP_API_BASE_URL!;
+const BACKEND_URL = process.env.REACT_APP_API_BASE_URL || 'https://redeemordie-website.onrender.com';
 
 if (!process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY) {
   throw new Error('Stripe configuration missing');

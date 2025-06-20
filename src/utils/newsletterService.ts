@@ -11,7 +11,7 @@ interface NewsletterResponse {
 
 export const subscribeToNewsletter = async (subscriber: NewsletterSubscriber): Promise<void> => {
   try {
-    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL!;
+    const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://redeemordie-website.onrender.com';
     const url = `${API_BASE_URL}/api/newsletter/subscribe`;
     
     const response = await fetch(url, {
