@@ -25,6 +25,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Check if Firebase auth is available
+    if (!auth) {
+      console.warn('Firebase auth not available - running without authentication');
+      setLoading(false);
+      return;
+    }
+
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
@@ -34,6 +41,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string) => {
+    if (!auth) {
+      throw new Error('Authentication not available - Firebase not configured');
+    }
+
     try {
       setError(null);
       await signInWithEmailAndPassword(auth, email, password);
@@ -63,6 +74,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
+    if (!auth) {
+      throw new Error('Authentication not available - Firebase not configured');
+    }
+
     try {
       setError(null);
       await signOut(auth);
@@ -73,6 +88,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resetPassword = async (email: string) => {
+    if (!auth) {
+      throw new Error('Authentication not available - Firebase not configured');
+    }
+
     try {
       setError(null);
       await sendPasswordResetEmail(auth, email);
