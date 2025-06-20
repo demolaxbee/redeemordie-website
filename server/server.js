@@ -32,12 +32,23 @@ app.use(limiter);
 app.use(express.json());
 
 // CORS configuration
-const allowedOrigins = [process.env.FRONTEND_URL];
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  // 'http://localhost:3000',  // React dev server
+  // 'http://127.0.0.1:3000',  // Alternative localhost
+  // 'http://localhost:3001',  // Alternative React port
+].filter(Boolean); // Remove undefined values
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    // Allow requests with no origin (like mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
+    
+    console.log('CORS blocked origin:', origin);
     return callback(new Error('Not allowed by CORS'));
   },
   credentials: true
