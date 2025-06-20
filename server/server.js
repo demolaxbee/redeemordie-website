@@ -34,9 +34,10 @@ app.use(express.json());
 // CORS configuration
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  // 'http://localhost:3000',  // React dev server
-  // 'http://127.0.0.1:3000',  // Alternative localhost
-  // 'http://localhost:3001',  // Alternative React port
+  'https://www.redeemordie.com',
+  'https://redeemordie.com',
+  // 'http://localhost:3000',  // Development
+  // 'http://127.0.0.1:3000'   // Development
 ].filter(Boolean); // Remove undefined values
 
 app.use(cors({

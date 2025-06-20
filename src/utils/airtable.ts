@@ -35,8 +35,9 @@ export interface Product {
         category: record.fields.Category,
         description: record.fields.Description,
         stock: record.fields.Stock,
-        imageUrls: record.fields.Image?.map((img: any) => img?.thumbnails?.large?.url) || [],
-
+        imageUrls: record.fields.Image?.map((img: any) => 
+          img?.url || img?.thumbnails?.large?.url || img?.thumbnails?.full?.url || ''
+        ).filter(Boolean) || [],
         sizes: record.fields.Size || [],
       }));
     } catch (error) {
@@ -55,10 +56,11 @@ export const addProduct = async (product: Product): Promise<Product> => {
       Description: product.description,
       Stock: product.stock,
       // Airtable expects image URLs to be in a specific format for attachment fields
-      // This might need adjustment based on your Airtable configuration
       Image: product.imageUrls.map(url => ({ url })),
       Size: product.sizes || [],
     };
+
+    console.log('Adding to Airtable with fields:', fields);
 
     const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
       method: 'POST',
@@ -71,10 +73,12 @@ export const addProduct = async (product: Product): Promise<Product> => {
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('Airtable add error:', errorData);
       throw new Error(`Airtable error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
+    console.log('Airtable add response:', data);
     
     return {
       id: data.id,
@@ -83,7 +87,9 @@ export const addProduct = async (product: Product): Promise<Product> => {
       category: data.fields.Category,
       description: data.fields.Description,
       stock: data.fields.Stock,
-      imageUrls: data.fields.Image || [],
+      imageUrls: data.fields.Image?.map((img: any) => 
+        img?.url || img?.thumbnails?.large?.url || img?.thumbnails?.full?.url || ''
+      ).filter(Boolean) || [],
       sizes: data.fields.Size || [],
     };
   } catch (error) {
@@ -102,8 +108,13 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
     if (product.category !== undefined) fields.Category = product.category;
     if (product.description !== undefined) fields.Description = product.description;
     if (product.stock !== undefined) fields.Stock = product.stock;
-    if (product.imageUrls !== undefined) fields.Image = product.imageUrls.map(url => ({ url }));
+    if (product.imageUrls !== undefined) {
+      // Convert URLs to Airtable attachment format
+      fields.Image = product.imageUrls.map(url => ({ url }));
+    }
     if (product.sizes !== undefined) fields.Size = product.sizes;
+
+    console.log('Updating Airtable with fields:', fields);
 
     const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${id}`, {
       method: 'PATCH',
@@ -116,10 +127,12 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
 
     if (!response.ok) {
       const errorData = await response.json();
+      console.error('Airtable update error:', errorData);
       throw new Error(`Airtable error: ${errorData.error?.message || 'Unknown error'}`);
     }
 
     const data = await response.json();
+    console.log('Airtable update response:', data);
     
     return {
       id: data.id,
@@ -128,7 +141,9 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
       category: data.fields.Category,
       description: data.fields.Description,
       stock: data.fields.Stock,
-      imageUrls: data.fields.Image || [],
+      imageUrls: data.fields.Image?.map((img: any) => 
+        img?.url || img?.thumbnails?.large?.url || img?.thumbnails?.full?.url || ''
+      ).filter(Boolean) || [],
       sizes: data.fields.Size || [],
     };
   } catch (error) {

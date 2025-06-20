@@ -17,9 +17,9 @@ const DeliveryReturns: React.FC = () => {
       <p>Due to the nature of our business and limited inventory, we do not accept returns or exchanges. Please ensure your order details are correct before confirming your purchase. If you receive a damaged or incorrect item, please contact us within 3 days of delivery.</p>
 
       <h2>Contact Us</h2>
-      <p>If you have any questions about delivery or need to report a damaged/incorrect item, please contact us at:</p>
+      <p>If you have any questions about delivery or need to report a damaged/incorrect item, please fill out the form on the contact page Or contact us at:</p>
       <p>
-        <strong>Email:</strong> info@redeemordie.com<br />
+        <strong>Email:</strong> redeemordie66@gmail.com<br />
         <strong>Business Address:</strong> Saskatoon, SK, Canada
       </p>
     </div>

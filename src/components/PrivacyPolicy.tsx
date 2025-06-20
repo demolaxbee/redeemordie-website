@@ -36,7 +36,7 @@ const PrivacyPolicy: React.FC = () => {
       <h2>4. Contact Us</h2>
       <p>If you have any questions or concerns about this Privacy Policy, please contact us at:</p>
       <p>
-        <strong>Email:</strong> info@redeemordie.com<br />
+        <strong>Email:</strong> redeemordie66@gmail.com<br />
         <strong>Business Address:</strong> Saskatoon, SK, Canada
       </p>
     </div>

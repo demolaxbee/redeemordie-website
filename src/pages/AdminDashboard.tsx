@@ -95,7 +95,8 @@ const AdminDashboard: React.FC = () => {
       stock: product.stock || 0,
       sizes: product.sizes || []
     });
-    setImagePreview(product.imageUrls.map(url => url));
+    setImagePreview(product.imageUrls || []);
+    setImageFiles([]);
     setIsEditing(true);
     setShowAddForm(true);
   };
@@ -128,7 +129,10 @@ const AdminDashboard: React.FC = () => {
     if (e.target.files) {
       const filesArray = Array.from(e.target.files);
       setImageFiles(filesArray);
-      setImagePreview(filesArray.map(file => URL.createObjectURL(file))); // for multiple previews
+      
+      // Create preview URLs for new files
+      const newPreviewUrls = filesArray.map(file => URL.createObjectURL(file));
+      setImagePreview(newPreviewUrls);
     }
   };
 
@@ -145,6 +149,9 @@ const AdminDashboard: React.FC = () => {
     setImageFiles([]);
     setImagePreview([]);
     setIsEditing(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const uploadImagesToCloudinary = async (files: File[]): Promise<string[]> => {
@@ -177,8 +184,16 @@ const AdminDashboard: React.FC = () => {
     try {
       let finalImageUrls: string[] = formData.imageUrls || [];
 
+      // Only upload new images if files are selected
       if (imageFiles.length > 0) {
-        finalImageUrls = await uploadImagesToCloudinary(imageFiles);
+        console.log('Uploading new images...');
+        const newImageUrls = await uploadImagesToCloudinary(imageFiles);
+        finalImageUrls = newImageUrls;
+        console.log('New images uploaded successfully');
+      } else if (isEditing) {
+        console.log('No new images selected, keeping existing images');
+        // Keep existing images when editing without new files
+        finalImageUrls = formData.imageUrls || [];
       }
 
       const productData = {
@@ -187,6 +202,8 @@ const AdminDashboard: React.FC = () => {
         price: Number(formData.price),
         stock: Number(formData.stock)
       };
+
+      console.log('Submitting product data:', productData);
 
       if (isEditing && formData.id) {
         const updated = await updateProduct(formData.id, productData);
