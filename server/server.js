@@ -77,13 +77,29 @@ app.use(cors({
 
 // Stripe Payment Intent
 app.post('/create-payment-intent', async (req, res) => {
-  const { amount, currency } = req.body;
+  const { amount, currency, paymentIntentId } = req.body;
   if (!amount || !currency) {
     return res.status(400).json({ error: 'Amount and currency required' });
   }
+
   try {
-    const paymentIntent = await stripe.paymentIntents.create({ amount, currency });
-    res.send({ clientSecret: paymentIntent.client_secret });
+    let paymentIntent;
+
+    if (paymentIntentId) {
+      try {
+        paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
+          amount,
+          currency
+        });
+      } catch (updateError) {
+        console.warn(`Failed to update PaymentIntent ${paymentIntentId}, creating new one.`, updateError.message);
+        paymentIntent = await stripe.paymentIntents.create({ amount, currency });
+      }
+    } else {
+      paymentIntent = await stripe.paymentIntents.create({ amount, currency });
+    }
+
+    res.send({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
   } catch (err) {
     console.error("Stripe error:", err);
     res.status(500).json({ error: 'Payment failed' });

@@ -325,6 +325,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
   const [subdivision, setSubdivision] = useState('');
   const hasSubdivision = !!subdivisions[form.country];
   const shippingCost = calculateShippingCost(form.country, subdivision);
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [isPaying, setIsPaying] = useState(false);
 
   useEffect(() => {
     onShippingCostChange(shippingCost);
@@ -353,6 +355,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isPaying) return;
+    setIsPaying(true);
     setLoading(true);
     setError(null);
     try {
@@ -363,10 +367,18 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
         body: JSON.stringify({
           amount: Math.round(orderSummary.total * 100), // Stripe expects cents
           currency: orderSummary.currency.toLowerCase(),
+          paymentIntentId,
         }),
       });
-      const { clientSecret } = await res.json();
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || 'Failed to get payment secret');
+      }
+      const { clientSecret, paymentIntentId: newPaymentIntentId } = await res.json();
       if (!clientSecret) throw new Error('Failed to get payment secret');
+      if (newPaymentIntentId) {
+        setPaymentIntentId(newPaymentIntentId);
+      }
 
       // 2. Confirm card payment
       const cardElement = elements?.getElement(CardElement);
@@ -401,6 +413,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
           }))
       };
 
+      let stockUpdateOk = true;
       if (stockPayload.items.length > 0) {
         const stockResponse = await fetch(`${BACKEND_URL}/api/update-stock`, {
           method: 'POST',
@@ -410,8 +423,32 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
 
         if (!stockResponse.ok) {
           const stockError = await stockResponse.json().catch(() => null);
-          throw new Error(stockError?.error || 'Failed to update stock');
+          const stockCode = stockError?.code || stockError?.error;
+          switch (stockCode) {
+            case 'AIRTABLE_CONFIG_MISSING':
+              setError('Inventory system unavailable. Please try again later.');
+              stockUpdateOk = false;
+              break;
+            case 'INSUFFICIENT_STOCK':
+              setError('One of your items sold out. Please adjust your cart.');
+              stockUpdateOk = false;
+              break;
+            case 'PRODUCT_NOT_FOUND':
+              setError('A product in your cart is no longer available.');
+              stockUpdateOk = false;
+              break;
+            case 'already_processed':
+              stockUpdateOk = true;
+              break;
+            default:
+              setError('An unexpected checkout error occurred.');
+              stockUpdateOk = false;
+          }
         }
+      }
+
+      if (!stockUpdateOk) {
+        return;
       }
 
       // 4. Send order email to admin via EmailJS with size detail
@@ -443,6 +480,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
       setError(err.message || 'Payment failed, please try again.');
     } finally {
       setLoading(false);
+      setIsPaying(false);
     }
   };
 
@@ -516,8 +554,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
         />
       </div>
       {error && <div className="checkout-error">{error}</div>}
-      <button className="checkout-submit" type="submit" disabled={loading || !stripe}>
-        {loading ? 'Processing...' : 'Pay Now'}
+      <button className="checkout-submit" type="submit" disabled={loading || !stripe || isPaying}>
+        {loading || isPaying ? 'Processing...' : 'Pay Now'}
       </button>
 
     </form>
