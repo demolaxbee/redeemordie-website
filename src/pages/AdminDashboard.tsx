@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchProducts, Product, addProduct, updateProduct, deleteProduct } from '../utils/airtable';
+import { fetchProducts, Product, addProduct, updateProduct, deleteProduct, ProductStock, EMPTY_STOCK } from '../utils/airtable';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/admin.css';
@@ -12,7 +12,7 @@ interface ProductFormData {
   description: string;
   category: string;
   imageUrls: string[];
-  stock: number;
+  stock: ProductStock;
   sizes: string[];
 }
 
@@ -30,22 +30,29 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('products');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formData, setFormData] = useState<ProductFormData>({
+  const createInitialFormData = (): ProductFormData => ({
     name: '',
     price: 0,
     description: '',
     category: '',
     imageUrls: [],
-    stock: 0,
+    stock: { ...EMPTY_STOCK },
     sizes: []
   });
+  const [formData, setFormData] = useState<ProductFormData>(createInitialFormData());
   const [isEditing, setIsEditing] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string[]>([]);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+  const sizeOptions: (keyof ProductStock)[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+  const getTotalStock = (stock?: ProductStock) =>
+    sizeOptions.reduce((total, size) => total + (stock?.[size] ?? 0), 0);
+
+  const formatStockDisplay = (stock?: ProductStock) =>
+    sizeOptions.map(size => `${size}: ${stock?.[size] ?? 0}`).join(' | ');
 
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -92,7 +99,7 @@ const AdminDashboard: React.FC = () => {
       description: product.description || '',
       category: product.category || '',
       imageUrls: product.imageUrls || [],
-      stock: product.stock || 0,
+      stock: product.stock || { ...EMPTY_STOCK },
       sizes: product.sizes || []
     });
     setImagePreview(product.imageUrls || []);
@@ -119,10 +126,21 @@ const AdminDashboard: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: name === 'price' || name === 'stock' ? parseFloat(value) : value
-    });
+    setFormData(prev => ({
+      ...prev,
+      [name]: name === 'price' ? parseFloat(value) : value
+    }));
+  };
+
+  const handleStockChange = (size: keyof ProductStock, value: string) => {
+    const parsedValue = Number(value);
+    setFormData(prev => ({
+      ...prev,
+      stock: {
+        ...prev.stock,
+        [size]: parsedValue >= 0 ? parsedValue : 0
+      }
+    }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,15 +155,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const resetForm = () => {
-    setFormData({
-      name: '',
-      price: 0,
-      description: '',
-      category: '',
-      imageUrls: [],
-      stock: 0,
-      sizes: []
-    });
+    setFormData(createInitialFormData());
     setImageFiles([]);
     setImagePreview([]);
     setIsEditing(false);
@@ -200,7 +210,7 @@ const AdminDashboard: React.FC = () => {
         ...formData,
         imageUrls: finalImageUrls,
         price: Number(formData.price),
-        stock: Number(formData.stock)
+        stock: { ...formData.stock }
       };
 
       console.log('Submitting product data:', productData);
@@ -267,7 +277,10 @@ const AdminDashboard: React.FC = () => {
                   <div className="admin-product-info">
                     <div className="admin-product-name">{product.name}</div>
                     <div className="admin-product-price">${product.price}</div>
-                    <div className="admin-product-stock">Stock: {product.stock || 0}</div>
+                    <div className="admin-product-stock">
+                      <div>Total Stock: {getTotalStock(product.stock)}</div>
+                      <div className="stock-breakdown">{formatStockDisplay(product.stock)}</div>
+                    </div>
                     <div className="admin-product-actions">
                       <button className="edit-btn" onClick={() => handleEdit(product)}>Edit</button>
                       <button className="delete-btn" onClick={() => handleDelete(product.id)}>Delete</button>
@@ -328,7 +341,7 @@ const AdminDashboard: React.FC = () => {
                   <div className="form-group">
                     <label>Available Sizes</label>
                     <div className="size-checkboxes">
-                      {availableSizes.map((size) => (
+                      {sizeOptions.map((size) => (
                         <label key={size} style={{ marginRight: '10px' }}>
                           <input
                             type="checkbox"
@@ -357,8 +370,22 @@ const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="stock">Stock Quantity</label>
-                    <input type="number" id="stock" name="stock" value={formData.stock} onChange={handleInputChange} min="0" disabled={formSubmitting} required />
+                    <label>Stock per Size</label>
+                    <div className="stock-input-grid">
+                      {sizeOptions.map(size => (
+                        <div key={size} className="stock-input-item">
+                          <label htmlFor={`stock-${size}`}>{size}</label>
+                          <input
+                            type="number"
+                            id={`stock-${size}`}
+                            min="0"
+                            value={formData.stock[size] ?? 0}
+                            onChange={(e) => handleStockChange(size, e.target.value)}
+                            disabled={formSubmitting}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="form-group">

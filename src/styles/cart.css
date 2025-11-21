@@ -340,3 +340,24 @@
   color: #666;
   margin: 0;
 }
+
+.quantity-area {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quantity-warning {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 4px;
+}
+
+.quantity-warning.low {
+  color: #f2c744;
+}
+
+.quantity-warning.max {
+  color: #ff4d4f;
+}

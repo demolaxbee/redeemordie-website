@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { fetchProducts, Product } from '../utils/airtable';
+import { fetchProducts, Product, ProductStock, EMPTY_STOCK } from '../utils/airtable';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 import { formatPrice } from '../utils/formatPrice';
@@ -57,10 +57,11 @@ const ProductDetail: React.FC = () => {
         const found = products.find((p) => p.id === id);
         setProduct(found || null);
         setAllProducts(products.filter((p) => p.id !== id)); // Exclude current product
-        if (found && found.sizes && found.sizes.length > 0) {
-          setSelectedSize(found.sizes[0]);
+        if (found) {
+          const firstAvailable = Object.entries(found.stock || {}).find(([, qty]) => qty > 0)?.[0];
+          setSelectedSize(firstAvailable || '');
         } else {
-          setSelectedSize(''); // No sizes available
+          setSelectedSize('');
         }
       } catch (err) {
         setError('Failed to load product.');
@@ -74,17 +75,14 @@ const ProductDetail: React.FC = () => {
   const handleAddToCart = () => {
     if (!product) return;
 
-    // Check if product is out of stock (no sizes available)
-    const isOutOfStock = !product.sizes || product.sizes.length === 0;
-    
-    if (isOutOfStock) {
-      toast.error('This product is currently out of stock.');
+    if (!selectedSize) {
+      toast.error('Please select a valid size.');
       return;
     }
 
-    // Check if a valid size is selected
-    if (!selectedSize || !product.sizes?.includes(selectedSize)) {
-      toast.error('Please select a valid size.');
+    const sizeStock = product.stock?.[selectedSize as keyof ProductStock] ?? 0;
+    if (sizeStock <= 0) {
+      toast.error('This size is currently out of stock.');
       return;
     }
 
@@ -113,16 +111,10 @@ const ProductDetail: React.FC = () => {
     );
   }
 
-  // All possible sizes
-  const allSizes: string[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const availableSizes: string[] = product.sizes || [];
-  const isOutOfStock = availableSizes.length === 0;
-  
-  const getSizeStatus = (size: string) => {
-    return availableSizes.includes(size);
-  };
-
-  const isValidSizeSelected = selectedSize && availableSizes.includes(selectedSize);
+  const stockEntries = Object.entries(product.stock || EMPTY_STOCK) as [keyof ProductStock, number][];
+  const isOutOfStock = stockEntries.every(([, qty]) => qty <= 0);
+  const isValidSizeSelected =
+    Boolean(selectedSize) && (product.stock?.[selectedSize as keyof ProductStock] ?? 0) > 0;
 
   return (
     <div className="product-detail">
@@ -159,22 +151,26 @@ const ProductDetail: React.FC = () => {
           <div className="size-selector">
             <h3>Size</h3>
             <div className="size-options">
-              {allSizes.map((size) => {
-                const isAvailable = getSizeStatus(size);
+              {stockEntries.map(([size, qty]) => {
+                const isAvailable = qty > 0;
                 return (
                   <button
                     key={size}
                     className={`size-button ${selectedSize === size ? 'active' : ''} ${!isAvailable ? 'unavailable opacity-40 cursor-not-allowed' : 'hover:bg-gray-200'}`}
                     onClick={() => isAvailable && setSelectedSize(size)}
                     disabled={!isAvailable}
-                    title={!isAvailable ? `Size ${size} is not available` : `Select size ${size}`}
+                    title={
+                      !isAvailable
+                        ? `Size ${size} is out of stock`
+                        : `Select size ${size} (${qty} available)`
+                    }
                   >
                     {size}
                   </button>
                 );
               })}
             </div>
-            {!isValidSizeSelected && availableSizes.length > 0 && (
+            {!isValidSizeSelected && !isOutOfStock && (
               <p className="text-sm text-gray-600 mt-2">
                 Please select a size to add to cart
               </p>
@@ -229,7 +225,7 @@ const ProductDetail: React.FC = () => {
         <h2>You May Also Like</h2>
         <div className="related-products">
           {allProducts.slice(0, 3).map((item) => {
-            const itemOutOfStock = !item.sizes || item.sizes.length === 0;
+            const itemOutOfStock = Object.values(item.stock || EMPTY_STOCK).every(qty => qty <= 0);
             return (
               <Link key={item.id} to={`/product/${item.id}`} className="related-item">
                 <div className="image-container relative">

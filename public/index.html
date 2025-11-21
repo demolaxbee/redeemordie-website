@@ -41,17 +41,18 @@
         img-src 'self' data: https:;
         font-src 'self' https:;
         connect-src 'self' http://localhost:4242 https: https://api.emailjs.com https://v6.exchangerate-api.com https://api.brevo.com;
-      "> -->
+      "> --> 
 
       <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.gstatic.com https://www.google-analytics.com https://apis.google.com;
+        script-src 'self' 'unsafe-inline' https://js.stripe.com https://www.gstatic.com https://www.google-analytics.com https://apis.google.com https://www.googletagmanager.com;
         style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
         font-src 'self' https://fonts.gstatic.com;
-        frame-src https://js.stripe.com https://hooks.stripe.com https://redeemordie-4651e.firebaseapp.com;
-        connect-src 'self' https://redeemordie-website.onrender.com https://r.stripe.com https://api.cloudinary.com https://res.cloudinary.com https://api.airtable.com https://api.emailjs.com https://api.stripe.com https://v6.exchangerate-api.com https://api.brevo.com https://ipapi.co https://firestore.googleapis.com https://identitytoolkit.googleapis.com;
+        frame-src https://js.stripe.com https://hooks.stripe.com https://redeemordie-4651e.firebaseapp.com https://www.googletagmanager.com https://www.google-analytics.com;
+        connect-src 'self' https://redeemordie-website.onrender.com https://api.airtable.com https://api.cloudinary.com https://res.cloudinary.com https://api.emailjs.com https://api.stripe.com https://r.stripe.com https://v6.exchangerate-api.com https://api.brevo.com https://ipapi.co https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://firebaseinstallations.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://www.googletagmanager.com https://www.google-analytics.com;
         img-src 'self' data: https:;
       ">
+
  
   </head>
   <body>

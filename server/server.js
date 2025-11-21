@@ -14,6 +14,26 @@ const app = express();
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const cache = new NodeCache({ stdTTL: 43200 }); // 12-hour TTL
 
+const AIRTABLE_TOKEN = process.env.AIRTABLE_PAT;
+const AIRTABLE_BASE_ID = process.env.AIRTABLE_BASE_ID;
+const AIRTABLE_TABLE_NAME = process.env.AIRTABLE_TABLE_NAME;
+const airtableBaseUrl = AIRTABLE_BASE_ID ? `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}` : null;
+const airtableHeaders = AIRTABLE_TOKEN
+  ? {
+      Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+      'Content-Type': 'application/json'
+    }
+  : null;
+
+const sizeFieldMap = {
+  XS: 'Stock_XS',
+  S: 'Stock_S',
+  M: 'Stock_M',
+  L: 'Stock_L',
+  XL: 'Stock_XL',
+  XXL: 'Stock_XXL'
+};
+
 // Set up security headers
 app.use(helmet());
 
@@ -117,6 +137,66 @@ app.get('/api/rates', async (req, res) => {
   } catch (error) {
     console.error('Exchange rate error:', error);
     res.status(500).json({ error: 'Rate lookup failed' });
+  }
+});
+
+// Update Airtable stock counts after checkout
+app.post('/api/update-stock', async (req, res) => {
+  if (!AIRTABLE_TOKEN || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_NAME) {
+    return res.status(500).json({ error: 'Airtable configuration missing' });
+  }
+
+  const { items } = req.body || {};
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: 'No items provided' });
+  }
+
+  const aggregatedUpdates = items.reduce((acc, item) => {
+    const productId = item?.productId;
+    const sizeKey = (item?.size || '').toUpperCase();
+    const quantity = Number(item?.quantity);
+
+    if (!productId || !sizeFieldMap[sizeKey] || !Number.isFinite(quantity) || quantity <= 0) {
+      return acc;
+    }
+
+    if (!acc[productId]) {
+      acc[productId] = {};
+    }
+    acc[productId][sizeKey] = (acc[productId][sizeKey] || 0) + quantity;
+    return acc;
+  }, {});
+
+  const productIds = Object.keys(aggregatedUpdates);
+  if (productIds.length === 0) {
+    return res.status(400).json({ error: 'No valid stock updates found' });
+  }
+
+  try {
+    for (const productId of productIds) {
+      const recordUrl = `${airtableBaseUrl}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}/${productId}`;
+      const recordResponse = await axios.get(recordUrl, { headers: airtableHeaders });
+      const currentFields = recordResponse.data?.fields || {};
+      const fieldsToUpdate = {};
+
+      Object.entries(aggregatedUpdates[productId]).forEach(([sizeKey, qty]) => {
+        const airtableField = sizeFieldMap[sizeKey];
+        if (!airtableField) return;
+        const currentValue = Number(currentFields[airtableField]) || 0;
+        fieldsToUpdate[airtableField] = Math.max(currentValue - qty, 0);
+      });
+
+      if (Object.keys(fieldsToUpdate).length === 0) {
+        continue;
+      }
+
+      await axios.patch(recordUrl, { fields: fieldsToUpdate }, { headers: airtableHeaders });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Stock update error:', error.response?.data || error.message);
+    res.status(500).json({ error: 'Failed to update stock' });
   }
 });
 

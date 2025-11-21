@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Product } from '../utils/airtable';
+import { Product, EMPTY_STOCK } from '../utils/airtable';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
@@ -24,8 +24,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const { currencyCode } = useCurrency();
   const [formattedPrice, setFormattedPrice] = useState(`C$${product.price.toFixed(2)}`);
 
-  // Check if product has available sizes
-  const isOutOfStock = !product.sizes || product.sizes.length === 0;
+  const totalStock = Object.values(product.stock || EMPTY_STOCK).reduce(
+    (sum, qty) => sum + (qty || 0),
+    0
+  );
+  const isOutOfStock = totalStock <= 0;
 
   useEffect(() => {
     const updatePrice = async () => {

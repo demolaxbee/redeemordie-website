@@ -10,6 +10,24 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE_URL || 'https://redeemordie-website.onrender.com';
 
+const normalizeProvince = (value: string) => value?.trim().toLowerCase();
+
+const isSaskatchewan = (province: string) => {
+  const normalized = normalizeProvince(province);
+  return normalized === 'saskatchewan' || normalized === 'sk';
+};
+
+const calculateShippingCost = (countryCode: string, province: string) => {
+  const country = (countryCode || '').trim().toUpperCase();
+  if (country === 'CA') {
+    if (isSaskatchewan(province)) {
+      return 0;
+    }
+    return 20;
+  }
+  return 30;
+};
+
 if (!process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY) {
   throw new Error('Stripe configuration missing');
 }
@@ -279,16 +297,17 @@ const subdivisions: Record<string, { label: string, options: string[] }> = {
   // Add more as needed
 };
 
-const CheckoutForm: React.FC = () => {
+interface CheckoutFormProps {
+  onShippingCostChange: (cost: number) => void;
+}
+
+const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
   const { 
     cartItems, 
     subtotalCAD,
-    taxCAD,
-    shippingCAD,
-    totalPriceCAD,
     clearCart
   } = useCart();
   const { currencyCode } = useCurrency();
@@ -305,18 +324,24 @@ const CheckoutForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [subdivision, setSubdivision] = useState('');
   const hasSubdivision = !!subdivisions[form.country];
+  const shippingCost = calculateShippingCost(form.country, subdivision);
+
+  useEffect(() => {
+    onShippingCostChange(shippingCost);
+  }, [shippingCost, onShippingCostChange]);
 
   // Real order summary from cart context with new pricing structure
   const orderSummary = {
     items: cartItems.map(item => ({
-      name: item.product.name + (item.selectedSize ? ` (Size: ${item.selectedSize})` : ''),
+      productId: item.productId,
+      size: item.selectedSize,
+      productName: item.product.name,
       price: item.product.price,
-      qty: item.quantity,
+      quantity: item.quantity,
     })),
     subtotal: subtotalCAD,
-    tax: taxCAD,
-    shipping: shippingCAD,
-    total: totalPriceCAD,
+    shipping: shippingCost,
+    total: subtotalCAD + shippingCost,
     currency: 'CAD',
   };
 
@@ -365,7 +390,36 @@ const CheckoutForm: React.FC = () => {
       if (paymentResult?.error) throw new Error(paymentResult.error.message);
       if (paymentResult?.paymentIntent?.status !== 'succeeded') throw new Error('Payment not successful');
 
-      // 3. Send order email to admin via EmailJS
+      // 3. Update Airtable stock levels
+      const stockPayload = {
+        items: orderSummary.items
+          .filter(item => item.productId && item.size)
+          .map(item => ({
+            productId: item.productId,
+            size: item.size,
+            quantity: item.quantity,
+          }))
+      };
+
+      if (stockPayload.items.length > 0) {
+        const stockResponse = await fetch(`${BACKEND_URL}/api/update-stock`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(stockPayload),
+        });
+
+        if (!stockResponse.ok) {
+          const stockError = await stockResponse.json().catch(() => null);
+          throw new Error(stockError?.error || 'Failed to update stock');
+        }
+      }
+
+      // 4. Send order email to admin via EmailJS with size detail
+      const orderLineItems = orderSummary.items.map(i => {
+        const sizeLabel = i.size ? ` (Size: ${i.size})` : '';
+        return `${i.quantity}x ${i.productName}${sizeLabel}`;
+      }).join(', ');
+
       await emailjs.send(
         process.env.REACT_APP_EMAILJS_SERVICE_ID!,
         process.env.REACT_APP_EMAILJS_ORDER_TEMPLATE_ID!,
@@ -374,13 +428,14 @@ const CheckoutForm: React.FC = () => {
           email: form.email,
           phone: form.phone,
           address: `${form.address}, ${form.city}, ${subdivision ? subdivision + ', ' : ''}${form.country}, ${form.postal}`,
-          order: orderSummary.items.map(i => `${i.qty}x ${i.name}`).join(', '),
+          order: orderLineItems,
+          shipping_cost: shippingCost,
           total: orderSummary.total,
         },
         process.env.REACT_APP_EMAILJS_USER_ID
       );
 
-      // Clear the cart after successful payment
+      // Clear the cart after stock update and confirmation email
       clearCart();
       // Redirect to thank you page
       navigate('/thank-you');
@@ -473,15 +528,11 @@ const Checkout: React.FC = () => {
   const { 
     cartItems, 
     subtotalCAD,
-    taxCAD,
-    shippingCAD,
-    totalPriceCAD, 
-    formattedSubtotal,
-    formattedTax,
-    formattedShipping,
-    formattedTotal 
+    formattedSubtotal
   } = useCart();
   const { currencyCode } = useCurrency();
+  const [shippingCost, setShippingCost] = useState(calculateShippingCost('', ''));
+  const totalDueCAD = subtotalCAD + shippingCost;
 
   if (cartItems.length === 0) {
     return (
@@ -509,7 +560,7 @@ const Checkout: React.FC = () => {
           
           <div className="checkout-content">
             <div className="checkout-form-section">
-              <CheckoutForm />
+              <CheckoutForm onShippingCostChange={setShippingCost} />
             </div>
             
             <div className="checkout-summary-section">
@@ -538,20 +589,24 @@ const Checkout: React.FC = () => {
                     <span>{formattedSubtotal}</span>
                   </div>
                   <div className="breakdown-line">
-                    <span>Tax (2%)</span>
-                    <span>{formattedTax}</span>
-                  </div>
-                  <div className="breakdown-line">
                     <span>Shipping</span>
-                    <span>{formattedShipping}</span>
+                    <PriceDisplay 
+                      price={shippingCost} 
+                      currencyCode={currencyCode} 
+                      showAsSpan={true}
+                    />
                   </div>
                   <div className="summary-total">
                     <span>Total</span>
-                    <span>{formattedTotal}</span>
+                    <PriceDisplay 
+                      price={totalDueCAD} 
+                      currencyCode={currencyCode} 
+                      showAsSpan={true}
+                    />
                   </div>
                   {currencyCode !== 'CAD' && (
                     <div className="currency-note">
-                      <p>You'll be charged C${totalPriceCAD.toFixed(2)} CAD</p>
+                      <p>You'll be charged C${totalDueCAD.toFixed(2)} CAD</p>
                     </div>
                   )}
                 </div>

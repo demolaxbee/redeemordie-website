@@ -5,6 +5,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { formatPrice } from '../utils/formatPrice';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/cart.css';
+import { ProductStock } from '../utils/airtable';
 
 interface PriceDisplayProps {
   price: number;
@@ -80,7 +81,7 @@ const Cart: React.FC = () => {
                 {cartItems.map((item) => (
                   <motion.div 
                     className="cart-item"
-                    key={`${item.product.id}-${item.selectedSize}`}
+                    key={`${item.productId}-${item.selectedSize}`}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
@@ -100,26 +101,52 @@ const Cart: React.FC = () => {
                       </div>
                       
                       <div className="item-controls">
-                        <div className="quantity-controls">
-                          <button 
-                            onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedSize)}
-                            className="quantity-btn"
-                            disabled={item.quantity <= 1}
-                          >
-                            −
-                          </button>
-                          <span className="quantity">{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedSize)}
-                            className="quantity-btn"
-                          >
-                            +
-                          </button>
+                        <div className="quantity-area">
+                          {(() => {
+                            const sizeStock =
+                              item.product.stock?.[item.selectedSize as keyof ProductStock] ??
+                              item.sizeStock ??
+                              0;
+                            const disableIncrease = sizeStock > 0 ? item.quantity >= sizeStock : true;
+                            const warningMessage = (() => {
+                              if (sizeStock <= 0) return '';
+                              if (item.quantity >= sizeStock) return `Max ${sizeStock} available`;
+                              if (sizeStock < 5) return `Only ${sizeStock} left in stock`;
+                              return '';
+                            })();
+                            const warningType = item.quantity >= sizeStock ? 'max' : 'low';
+                            return (
+                              <>
+                                <div className="quantity-controls">
+                                  <button 
+                                    onClick={() => updateQuantity(item.productId, item.quantity - 1, item.selectedSize)}
+                                    className="quantity-btn"
+                                    disabled={item.quantity <= 1}
+                                  >
+                                    -
+                                  </button>
+                                  <span className="quantity">{item.quantity}</span>
+                                  <button 
+                                    onClick={() => updateQuantity(item.productId, item.quantity + 1, item.selectedSize)}
+                                    className="quantity-btn"
+                                    disabled={disableIncrease}
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                {warningMessage && (
+                                  <div className={`quantity-warning ${warningType}`}>
+                                    {warningMessage}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
                         </div>
-                        
+
                         <button 
                           className="remove-btn" 
-                          onClick={() => removeFromCart(item.product.id, item.selectedSize)}
+                          onClick={() => removeFromCart(item.productId, item.selectedSize)}
                         >
                           REMOVE
                         </button>
@@ -136,21 +163,16 @@ const Cart: React.FC = () => {
                 </div>
                 <div className="summary-line">
                   <span>Tax (2%)</span>
-                  <span>{formattedTax}</span>
+                  <span>Calculated at checkout</span>
                 </div>
                 <div className="summary-line">
                   <span>Shipping</span>
-                  <span>{formattedShipping}</span>
+                  <span>Calculated at checkout</span>
                 </div>
                 <div className="summary-total">
                   <span>Total</span>
-                  <span>{formattedTotal}</span>
+                  <span>{formattedSubtotal}</span>
                 </div>
-                {currencyCode !== 'CAD' && (
-                  <div className="currency-note">
-                    <p>You'll be charged C${totalPriceCAD.toFixed(2)} CAD</p>
-                  </div>
-                )}
               </div>
 
               <div className="order-note-section">

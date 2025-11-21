@@ -51,7 +51,7 @@ const Home: React.FC = () => {
           className="background-video"
           poster="/fallback-image.jpg"
         >
-          <source src="/background-video.mp4" type="video/mp4" />
+          <source src="/new-background-video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>

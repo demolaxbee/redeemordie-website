@@ -1,51 +1,78 @@
+export interface ProductStock {
+  XS: number;
+  S: number;
+  M: number;
+  L: number;
+  XL: number;
+  XXL: number;
+}
+
 export interface Product {
-    id: string;
-    name: string;
-    price: number;
-    category: string;
-    description: string;
-    stock: number;
-    imageUrls: string[];
-    sizes?: string[];
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+  description: string;
+  stock: ProductStock;
+  imageUrls: string[];
+  sizes?: string[];
+}
+
+const AIRTABLE_TOKEN = process.env.REACT_APP_AIRTABLE_PAT!;
+const BASE_ID = process.env.REACT_APP_AIRTABLE_BASE_ID!;
+const TABLE_NAME = process.env.REACT_APP_AIRTABLE_TABLE_NAME!;
+
+export const EMPTY_STOCK: ProductStock = {
+  XS: 0,
+  S: 0,
+  M: 0,
+  L: 0,
+  XL: 0,
+  XXL: 0,
+};
+
+const mapStockFields = (fields: Record<string, any>): ProductStock => ({
+  XS: fields.Stock_XS || 0,
+  S: fields.Stock_S || 0,
+  M: fields.Stock_M || 0,
+  L: fields.Stock_L || 0,
+  XL: fields.Stock_XL || 0,
+  XXL: fields.Stock_XXL || 0,
+});
+
+if (!AIRTABLE_TOKEN || !BASE_ID || !TABLE_NAME) {
+  throw new Error('Airtable configuration incomplete');
+}
+
+export const fetchProducts = async (): Promise<Product[]> => {
+  try {
+    const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
+      headers: {
+        Authorization: `Bearer ${AIRTABLE_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    return data.records.map((record: any) => ({
+      id: record.id,
+      name: record.fields.Name,
+      price: record.fields.Price,
+      category: record.fields.Category,
+      description: record.fields.Description,
+      stock: mapStockFields(record.fields),
+      imageUrls: record.fields.Image?.map((img: any) =>
+        img?.url || img?.thumbnails?.large?.url || img?.thumbnails?.full?.url || ''
+      ).filter(Boolean) || [],
+      sizes: record.fields.Size || [],
+    }));
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    throw error;
   }
+};
 
-  const AIRTABLE_TOKEN = process.env.REACT_APP_AIRTABLE_PAT!;
-  const BASE_ID = process.env.REACT_APP_AIRTABLE_BASE_ID!;  
-  const TABLE_NAME = process.env.REACT_APP_AIRTABLE_TABLE_NAME!;
-
-  if (!AIRTABLE_TOKEN || !BASE_ID || !TABLE_NAME) {
-    throw new Error('Airtable configuration incomplete');
-  }  
-  
-  export const fetchProducts = async (): Promise<Product[]> => {
-    try {
-      const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
-        headers: {
-          Authorization: `Bearer ${AIRTABLE_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      const data = await response.json();
-  
-      return data.records.map((record: any) => ({
-        id: record.id,
-        name: record.fields.Name,
-        price: record.fields.Price,
-        category: record.fields.Category,
-        description: record.fields.Description,
-        stock: record.fields.Stock,
-        imageUrls: record.fields.Image?.map((img: any) => 
-          img?.url || img?.thumbnails?.large?.url || img?.thumbnails?.full?.url || ''
-        ).filter(Boolean) || [],
-        sizes: record.fields.Size || [],
-      }));
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      throw error;
-    }
-  };
-  
 export const addProduct = async (product: Product): Promise<Product> => {
   try {
     // Format the data for Airtable
@@ -54,7 +81,12 @@ export const addProduct = async (product: Product): Promise<Product> => {
       Price: product.price,
       Category: product.category,
       Description: product.description,
-      Stock: product.stock,
+      Stock_XS: product.stock?.XS ?? 0,
+      Stock_S: product.stock?.S ?? 0,
+      Stock_M: product.stock?.M ?? 0,
+      Stock_L: product.stock?.L ?? 0,
+      Stock_XL: product.stock?.XL ?? 0,
+      Stock_XXL: product.stock?.XXL ?? 0,
       // Airtable expects image URLs to be in a specific format for attachment fields
       Image: product.imageUrls.map(url => ({ url })),
       Size: product.sizes || [],
@@ -86,7 +118,7 @@ export const addProduct = async (product: Product): Promise<Product> => {
       price: data.fields.Price,
       category: data.fields.Category,
       description: data.fields.Description,
-      stock: data.fields.Stock,
+      stock: mapStockFields(data.fields),
       imageUrls: data.fields.Image?.map((img: any) => 
         img?.url || img?.thumbnails?.large?.url || img?.thumbnails?.full?.url || ''
       ).filter(Boolean) || [],
@@ -107,7 +139,14 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
     if (product.price !== undefined) fields.Price = product.price;
     if (product.category !== undefined) fields.Category = product.category;
     if (product.description !== undefined) fields.Description = product.description;
-    if (product.stock !== undefined) fields.Stock = product.stock;
+    if (product.stock !== undefined) {
+      fields.Stock_XS = product.stock.XS ?? 0;
+      fields.Stock_S = product.stock.S ?? 0;
+      fields.Stock_M = product.stock.M ?? 0;
+      fields.Stock_L = product.stock.L ?? 0;
+      fields.Stock_XL = product.stock.XL ?? 0;
+      fields.Stock_XXL = product.stock.XXL ?? 0;
+    }
     if (product.imageUrls !== undefined) {
       // Convert URLs to Airtable attachment format
       fields.Image = product.imageUrls.map(url => ({ url }));
@@ -140,7 +179,7 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
       price: data.fields.Price,
       category: data.fields.Category,
       description: data.fields.Description,
-      stock: data.fields.Stock,
+      stock: mapStockFields(data.fields),
       imageUrls: data.fields.Image?.map((img: any) => 
         img?.url || img?.thumbnails?.large?.url || img?.thumbnails?.full?.url || ''
       ).filter(Boolean) || [],

@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product } from '../utils/airtable';
+import { Product, ProductStock, EMPTY_STOCK } from '../utils/airtable';
 import { formatPrice } from '../utils/formatPrice';
 import { useCurrency } from './CurrencyContext';
 
 interface CartItem {
+  productId: string;
   product: Product;
   quantity: number;
-  selectedSize?: string;
+  selectedSize: string;
+  sizeStock: number;
 }
 
 interface CartContextType {
@@ -40,10 +42,78 @@ export const useCart = () => {
   return context;
 };
 
+const sizeKeys: (keyof ProductStock)[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+const normalizeProductStock = (product: Product): Product => {
+  if (product && typeof (product as any).stock === 'number') {
+    const legacyStock = (product as any).stock as number;
+    const fallbackStock = sizeKeys.reduce<ProductStock>((acc, size) => {
+      acc[size] = legacyStock;
+      return acc;
+    }, { ...EMPTY_STOCK });
+    return {
+      ...product,
+      stock: fallbackStock
+    };
+  }
+  if (!product?.stock) {
+    return {
+      ...product,
+      stock: { ...EMPTY_STOCK }
+    };
+  }
+  return product;
+};
+
+const getSizeStockValue = (product: Product, size?: string) => {
+  if (!product || !size) return 0;
+  const normalizedSize = size as keyof ProductStock;
+  return product.stock?.[normalizedSize] ?? 0;
+};
+
+const hydrateCartItems = (): CartItem[] => {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return [];
+  }
+  const savedCart = localStorage.getItem('cart');
+  if (!savedCart) return [];
+
+  try {
+    const parsed: any[] = JSON.parse(savedCart);
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed
+      .map(rawItem => {
+        if (!rawItem?.product) return null;
+        const normalizedProduct = normalizeProductStock(rawItem.product);
+        const selectedSize: string = rawItem.selectedSize || '';
+        const productId = rawItem.productId || normalizedProduct.id;
+        if (!productId || !selectedSize) return null;
+
+        const sizeStock = getSizeStockValue(normalizedProduct, selectedSize);
+        if (sizeStock <= 0) {
+          return null;
+        }
+        const quantity = Math.max(1, Math.min(rawItem.quantity || 1, sizeStock));
+
+        return {
+          productId,
+          product: normalizedProduct,
+          quantity,
+          selectedSize,
+          sizeStock: sizeStock || 0
+        } as CartItem;
+      })
+      .filter((item): item is CartItem => Boolean(item));
+  } catch (error) {
+    console.error('Failed to parse saved cart, resetting.', error);
+    return [];
+  }
+};
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem('cart');
-    return savedCart ? JSON.parse(savedCart) : [];
+    return hydrateCartItems();
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [formattedSubtotal, setFormattedSubtotal] = useState('C$0.00');
@@ -53,6 +123,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { currencyCode } = useCurrency();
 
   useEffect(() => {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
@@ -111,43 +184,61 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [subtotalCAD, taxCAD, shippingCAD, totalPriceCAD, currencyCode]);
 
   const addToCart = (product: Product, selectedSize?: string) => {
-    // Validate product availability
-    const isOutOfStock = !product.sizes || product.sizes.length === 0;
-    
-    if (isOutOfStock) {
-      console.warn('Cannot add out of stock product to cart:', product.name);
-      return false; // Don't add to cart
+    if (!selectedSize) {
+      console.warn('Size selection required for product:', product.name);
+      return false;
     }
 
-    // If product has sizes, validate the selected size
-    if (product.sizes && product.sizes.length > 0) {
-      if (!selectedSize || !product.sizes.includes(selectedSize)) {
-        console.warn('Invalid size selected for product:', product.name, selectedSize);
-        return false; // Don't add to cart
-      }
+    const availableStock = getSizeStockValue(product, selectedSize);
+    if (availableStock <= 0) {
+      console.warn('Size out of stock:', product.name, selectedSize);
+      return false;
     }
 
+    let added = false;
     setCartItems(prevItems => {
       const existingItem = prevItems.find(
-        item => item.product.id === product.id && item.selectedSize === selectedSize
+        item => item.productId === product.id && item.selectedSize === selectedSize
       );
+
       if (existingItem) {
+        if (existingItem.quantity >= availableStock) {
+          console.warn('Cannot add more than available stock for', product.name, selectedSize);
+          return prevItems;
+        }
+        added = true;
         return prevItems.map(item =>
-          item.product.id === product.id && item.selectedSize === selectedSize
-            ? { ...item, quantity: item.quantity + 1 }
+          item.productId === product.id && item.selectedSize === selectedSize
+            ? {
+                ...item,
+                quantity: item.quantity + 1,
+                product,
+                sizeStock: availableStock
+              }
             : item
         );
       }
-      return [...prevItems, { product, quantity: 1, selectedSize }];
+
+      added = true;
+      return [
+        ...prevItems,
+        {
+          productId: product.id,
+          product,
+          quantity: 1,
+          selectedSize,
+          sizeStock: availableStock
+        }
+      ];
     });
     
-    return true; // Successfully added to cart
+    return added;
   };
 
   const removeFromCart = (productId: string, selectedSize?: string) => {
     setCartItems(prevItems =>
       prevItems.filter(item =>
-        !(item.product.id === productId && item.selectedSize === selectedSize)
+        !(item.productId === productId && item.selectedSize === selectedSize)
       )
     );
   };
@@ -157,8 +248,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (quantity < 1) return;
     setCartItems(prevItems =>
       prevItems.map(item =>
-        item.product.id === productId && item.selectedSize === selectedSize
-          ? { ...item, quantity }
+        item.productId === productId && item.selectedSize === selectedSize
+          ? (() => {
+              const latestStock = getSizeStockValue(item.product, item.selectedSize) || item.sizeStock;
+              return {
+                ...item,
+                quantity: Math.max(1, Math.min(quantity, latestStock)),
+                sizeStock: latestStock
+              };
+            })()
           : item
       )
     );
