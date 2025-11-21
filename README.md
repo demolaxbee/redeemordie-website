@@ -180,92 +180,11 @@ server/
 
 ### Available Scripts
 
-**Frontend:**
-- `npm start` - Development server
-- `npm build` - Production build
-- `npm test` - Run tests
-- `npm eject` - Eject from Create React App
+- `npm start` - Runs the app in development mode
+- `npm build` - Builds the app for production
+- `npm test` - Runs the test suite
+- `npm eject` - Ejects from Create React App
 
-**Backend:**
-- `npm start` - Start Express server
-- `npm run dev` - Development server with nodemon
+## 📄 License
 
-## Production Deployment
-
-### Environment Setup
-1. **Frontend**: Deploy to Vercel, Netlify, or similar
-2. **Backend**: Deploy to Heroku, Railway, or similar
-3. **Database**: Airtable for product management
-4. **Payments**: Stripe for secure transactions
-5. **Email**: Brevo for newsletters, EmailJS for contact forms
-
-
-### Pre-deployment Checklist
-- [ ] Update hardcoded localhost URLs to production URLs
-- [ ] Configure CORS for production domains
-- [ ] Set up SSL certificates (HTTPS)
-- [ ] Test payment flow end-to-end
-- [ ] Verify email services are working
-- [ ] Test admin authentication
-- [ ] Optimize images and assets
-- [ ] Set up monitoring and analytics
-
-## Email Integration
-
-### Newsletter (Brevo)
-- Signup form on homepage
-- API integration via backend to avoid CORS
-- Subscriber management through Brevo dashboard
-
-### Contact Forms (EmailJS)
-- Direct frontend integration
-- Template-based email sending
-- Form validation and error handling
-
-## E-commerce Features
-
-### Shopping Cart
-- Add/remove products
-- Quantity management
-- Persistent storage
-- Currency conversion
-- Sidebar interface
-
-### Checkout Process
-1. Cart review
-2. Customer information
-3. Stripe payment processing
-4. Order confirmation
-5. Thank you page with continue shopping option
-
-### Admin Management
-- Product CRUD operations
-- Inventory tracking
-- Order management (via Airtable)
-- Secure authentication
-
-## Security Features
-
-- Environment variable protection
-- Secure API key management
-- HTTPS enforcement
-- Input validation and sanitization
-- Protected admin routes
-- CORS configuration
-
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## License
-
-MIT License - feel free to use this project as a template for your own e-commerce website.
-
-##  Support
-
-For support, email demolaobaleye@gmail.com or create an issue in the GitHub repository.
+MIT License - feel free to use this project as a template for your own work.

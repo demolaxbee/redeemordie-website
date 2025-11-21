@@ -75,7 +75,7 @@ export const fetchProducts = async (): Promise<Product[]> => {
 
 export const addProduct = async (product: Product): Promise<Product> => {
   try {
-    // Format the data for Airtable
+    // Format the data for Airtable API
     const fields = {
       Name: product.name,
       Price: product.price,
@@ -94,6 +94,7 @@ export const addProduct = async (product: Product): Promise<Product> => {
 
     console.log('Adding to Airtable with fields:', fields);
 
+    // Make POST request to create new record
     const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}`, {
       method: 'POST',
       headers: {
@@ -103,6 +104,7 @@ export const addProduct = async (product: Product): Promise<Product> => {
       body: JSON.stringify({ fields }),
     });
 
+    // Handle API errors
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Airtable add error:', errorData);
@@ -112,6 +114,7 @@ export const addProduct = async (product: Product): Promise<Product> => {
     const data = await response.json();
     console.log('Airtable add response:', data);
     
+    // Return the created product with Airtable ID
     return {
       id: data.id,
       name: data.fields.Name,
@@ -130,9 +133,20 @@ export const addProduct = async (product: Product): Promise<Product> => {
   }
 };
 
+/**
+ * Update an existing product in Airtable
+ * 
+ * Updates a specific record in Airtable with partial product data.
+ * Only updates fields that are provided in the product parameter.
+ * 
+ * @param {string} id - Airtable record ID to update
+ * @param {Partial<Product>} product - Partial product data to update
+ * @returns {Promise<Product>} The updated product
+ * @throws {Error} When API request fails or record not found
+ */
 export const updateProduct = async (id: string, product: Partial<Product>): Promise<Product> => {
   try {
-    // Format the data for Airtable
+    // Build fields object with only provided values
     const fields: any = {};
     
     if (product.name !== undefined) fields.Name = product.name;
@@ -155,6 +169,7 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
 
     console.log('Updating Airtable with fields:', fields);
 
+    // Make PATCH request to update existing record
     const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${id}`, {
       method: 'PATCH',
       headers: {
@@ -164,6 +179,7 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
       body: JSON.stringify({ fields }),
     });
 
+    // Handle API errors
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Airtable update error:', errorData);
@@ -173,6 +189,7 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
     const data = await response.json();
     console.log('Airtable update response:', data);
     
+    // Return the updated product
     return {
       id: data.id,
       name: data.fields.Name,
@@ -191,8 +208,18 @@ export const updateProduct = async (id: string, product: Partial<Product>): Prom
   }
 };
 
+/**
+ * Delete a product from Airtable
+ * 
+ * Permanently removes a record from the Airtable base.
+ * 
+ * @param {string} id - Airtable record ID to delete
+ * @returns {Promise<void>} Resolves when deletion is successful
+ * @throws {Error} When API request fails or record not found
+ */
 export const deleteProduct = async (id: string): Promise<void> => {
   try {
+    // Make DELETE request to remove record
     const response = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${TABLE_NAME}/${id}`, {
       method: 'DELETE',
       headers: {
@@ -201,6 +228,7 @@ export const deleteProduct = async (id: string): Promise<void> => {
       },
     });
 
+    // Handle API errors
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(`Airtable error: ${errorData.error?.message || 'Unknown error'}`);
