@@ -298,7 +298,7 @@ const subdivisions: Record<string, { label: string, options: string[] }> = {
 };
 
 interface CheckoutFormProps {
-  onShippingCostChange: (cost: number) => void;
+  onShippingCostChange: (cost: number | null) => void;
 }
 
 const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => {
@@ -324,13 +324,21 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
   const [error, setError] = useState<string | null>(null);
   const [subdivision, setSubdivision] = useState('');
   const hasSubdivision = !!subdivisions[form.country];
-  const shippingCost = calculateShippingCost(form.country, subdivision);
+  const [shippingCost, setShippingCost] = useState<number | null>(null);
+  const isShippingReady = !!form.country && (form.country !== 'CA' || subdivision.trim() !== '');
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [isPaying, setIsPaying] = useState(false);
 
   useEffect(() => {
-    onShippingCostChange(shippingCost);
-  }, [shippingCost, onShippingCostChange]);
+    if (!isShippingReady) {
+      setShippingCost(null);
+      onShippingCostChange(null);
+      return;
+    }
+    const calculatedCost = calculateShippingCost(form.country, subdivision);
+    setShippingCost(calculatedCost);
+    onShippingCostChange(calculatedCost);
+  }, [form.country, subdivision, isShippingReady, onShippingCostChange]);
 
   // Real order summary from cart context with new pricing structure
   const orderSummary = {
@@ -343,7 +351,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
     })),
     subtotal: subtotalCAD,
     shipping: shippingCost,
-    total: subtotalCAD + shippingCost,
+    total: subtotalCAD + (shippingCost ?? 0),
     currency: 'CAD',
   };
 
@@ -355,6 +363,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isShippingReady) {
+      setError('Please select your country and province to calculate shipping.');
+      return;
+    }
     if (isPaying) return;
     setIsPaying(true);
     setLoading(true);
@@ -466,8 +478,8 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
           phone: form.phone,
           address: `${form.address}, ${form.city}, ${subdivision ? subdivision + ', ' : ''}${form.country}, ${form.postal}`,
           order: orderLineItems,
-          shipping_cost: shippingCost,
           total: orderSummary.total,
+          ...(shippingCost !== null ? { shipping_cost: shippingCost } : {}),
         },
         process.env.REACT_APP_EMAILJS_USER_ID
       );
@@ -511,7 +523,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
           name="subdivision"
           value={subdivision}
           onChange={e => setSubdivision(e.target.value)}
-          required
+          required={form.country === 'CA'}
           className="checkout-subdivision-select"
         >
           <option value="">{subdivisions[form.country].label}</option>
@@ -569,8 +581,9 @@ const Checkout: React.FC = () => {
     formattedSubtotal
   } = useCart();
   const { currencyCode } = useCurrency();
-  const [shippingCost, setShippingCost] = useState(calculateShippingCost('', ''));
-  const totalDueCAD = subtotalCAD + shippingCost;
+  const [shippingCost, setShippingCost] = useState<number | null>(null);
+  const totalDueCAD = subtotalCAD + (shippingCost ?? 0);
+  const isShippingReady = shippingCost !== null;
 
   if (cartItems.length === 0) {
     return (
@@ -623,16 +636,20 @@ const Checkout: React.FC = () => {
                 
                 <div className="pricing-breakdown">
                   <div className="breakdown-line">
-                    <span>Subtotal</span>
+                    <span>Subtotal:</span>
                     <span>{formattedSubtotal}</span>
                   </div>
                   <div className="breakdown-line">
-                    <span>Shipping</span>
-                    <PriceDisplay 
-                      price={shippingCost} 
-                      currencyCode={currencyCode} 
-                      showAsSpan={true}
-                    />
+                    <span>Shipping:</span>
+                    {shippingCost === null ? (
+                      <span>Calculated at checkout</span>
+                    ) : (
+                      <PriceDisplay 
+                        price={shippingCost} 
+                        currencyCode={currencyCode} 
+                        showAsSpan={true}
+                      />
+                    )}
                   </div>
                   <div className="summary-total">
                     <span>Total</span>
@@ -642,6 +659,11 @@ const Checkout: React.FC = () => {
                       showAsSpan={true}
                     />
                   </div>
+                  {!isShippingReady && (
+                    <div className="currency-note">
+                      <p>Total will update after shipping is calculated</p>
+                    </div>
+                  )}
                   {currencyCode !== 'CAD' && (
                     <div className="currency-note">
                       <p>You'll be charged C${totalDueCAD.toFixed(2)} CAD</p>
