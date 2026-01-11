@@ -354,6 +354,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
     total: subtotalCAD + (shippingCost ?? 0),
     currency: 'CAD',
   };
+  const itemCount = orderSummary.items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -372,6 +373,13 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
     setLoading(true);
     setError(null);
     try {
+      const itemsForMetadata = orderSummary.items.map(item => ({
+        name: item.productName,
+        size: item.size,
+        qty: item.quantity,
+      }));
+      const orderNote = typeof window !== 'undefined' ? localStorage.getItem('orderNote') : '';
+      const taxAmount = 0;
       // 1. Create PaymentIntent on backend
       const res = await fetch(`${BACKEND_URL}/create-payment-intent`, {
         method: 'POST',
@@ -380,6 +388,15 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
           amount: Math.round(orderSummary.total * 100), // Stripe expects cents
           currency: orderSummary.currency.toLowerCase(),
           paymentIntentId,
+          receiptEmail: form.email,
+          itemCount,
+          items: itemsForMetadata,
+          shippingCountry: form.country,
+          shippingRegion: subdivision,
+          shippingCost: shippingCost ?? 0,
+          taxAmount,
+          subtotal: orderSummary.subtotal,
+          ...(orderNote ? { orderNote } : {}),
         }),
       });
       if (!res.ok) {

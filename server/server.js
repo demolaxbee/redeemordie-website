@@ -34,6 +34,56 @@ const sizeFieldMap = {
   XXL: 'Stock_XXL'
 };
 
+const normalizeAmount = (value, fallback = 0) => {
+  const amount = Number(value);
+  return Number.isFinite(amount) ? amount : fallback;
+};
+
+const formatAmount = (value, currency) => {
+  const normalized = normalizeAmount(value).toFixed(2);
+  return `${String(currency || '').toUpperCase()} ${normalized}`;
+};
+
+const buildIntentDetails = ({
+  amount,
+  currency,
+  receiptEmail,
+  itemCount,
+  items,
+  shippingCountry,
+  shippingRegion,
+  shippingCost,
+  taxAmount,
+  subtotal,
+  orderNote
+}) => {
+  const totalAmount = normalizeAmount(amount) / 100;
+  const normalizedShipping = normalizeAmount(shippingCost);
+  const normalizedTax = normalizeAmount(taxAmount);
+  const normalizedSubtotal = normalizeAmount(subtotal);
+  const normalizedItemCount = Math.max(0, Math.floor(normalizeAmount(itemCount)));
+  const itemLabel = `${normalizedItemCount} item${normalizedItemCount === 1 ? '' : 's'}`;
+
+  const metadata = {
+    items: JSON.stringify(Array.isArray(items) ? items : []),
+    shipping_country: String(shippingCountry || ''),
+    'shipping_province/state': String(shippingRegion || ''),
+    shipping_cost: normalizedShipping.toFixed(2),
+    tax_amount: normalizedTax.toFixed(2),
+    subtotal: normalizedSubtotal.toFixed(2)
+  };
+
+  if (orderNote) {
+    metadata.order_note = String(orderNote);
+  }
+
+  return {
+    ...(receiptEmail ? { receipt_email: receiptEmail } : {}),
+    description: `${itemLabel} | shipping ${formatAmount(normalizedShipping, currency)} | tax ${formatAmount(normalizedTax, currency)} | total ${formatAmount(totalAmount, currency)}`,
+    metadata
+  };
+};
+
 // Set up security headers
 app.use(helmet());
 
@@ -77,26 +127,56 @@ app.use(cors({
 
 // Stripe Payment Intent
 app.post('/create-payment-intent', async (req, res) => {
-  const { amount, currency, paymentIntentId } = req.body;
+  const {
+    amount,
+    currency,
+    paymentIntentId,
+    receiptEmail,
+    itemCount,
+    items,
+    shippingCountry,
+    shippingRegion,
+    shippingCost,
+    taxAmount,
+    subtotal,
+    orderNote
+  } = req.body;
   if (!amount || !currency) {
     return res.status(400).json({ error: 'Amount and currency required' });
   }
 
   try {
     let paymentIntent;
+    const intentDetails = buildIntentDetails({
+      amount,
+      currency,
+      receiptEmail,
+      itemCount,
+      items,
+      shippingCountry,
+      shippingRegion,
+      shippingCost,
+      taxAmount,
+      subtotal,
+      orderNote
+    });
+    const intentParams = {
+      amount,
+      currency,
+      ...intentDetails
+    };
 
     if (paymentIntentId) {
       try {
         paymentIntent = await stripe.paymentIntents.update(paymentIntentId, {
-          amount,
-          currency
+          ...intentParams
         });
       } catch (updateError) {
         console.warn(`Failed to update PaymentIntent ${paymentIntentId}, creating new one.`, updateError.message);
-        paymentIntent = await stripe.paymentIntents.create({ amount, currency });
+        paymentIntent = await stripe.paymentIntents.create({ ...intentParams });
       }
     } else {
-      paymentIntent = await stripe.paymentIntents.create({ amount, currency });
+      paymentIntent = await stripe.paymentIntents.create({ ...intentParams });
     }
 
     res.send({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
