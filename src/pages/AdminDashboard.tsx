@@ -16,7 +16,6 @@ interface ProductFormData {
   sizes: string[];
 }
 
-const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD_NAME;
 const uploadPreset = process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET;
 const cloudinaryUrl = process.env.REACT_APP_CLOUDINARY_URL;
 

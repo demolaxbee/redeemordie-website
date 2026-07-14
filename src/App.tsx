@@ -8,7 +8,6 @@ import './styles/admin.css';
 import './styles/thank-you.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { toast } from 'react-toastify';
 
 // Pages
 import Home from './pages/Home';

@@ -1,20 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { auth, db, storage } from '../firebase';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
-import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../styles/admin.css';
-
-interface Product {
-  id?: string;
-  name: string;
-  price: number;
-  description: string;
-  stock: number;
-  imageUrl: string;
-}
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -24,14 +13,6 @@ const AdminLogin: React.FC = () => {
   const { login, resetPassword, error: authError, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Product state
-  const [products, setProducts] = useState<Product[]>([]);
-  const [form, setForm] = useState<Omit<Product, 'id' | 'imageUrl'> & { imageFile?: File | null }>({
-    name: '', price: 0, description: '', stock: 0, imageFile: null
-  });
-  const [editId, setEditId] = useState<string | null>(null);
-  const [formLoading, setFormLoading] = useState(false);
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -40,14 +21,6 @@ const AdminLogin: React.FC = () => {
     });
     return () => unsubscribe();
   }, [navigate]);
-
-  // Fetch products in real time
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'products'), (snapshot) => {
-      setProducts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product)));
-    });
-    return () => unsub();
-  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,66 +39,6 @@ const AdminLogin: React.FC = () => {
       setResetSent(true);
     } catch (err) {
       // Error is handled by the auth context
-    }
-  };
-
-  const handleLogout = async () => {
-    await signOut(auth);
-  };
-
-  // Add or update product
-  const handleProductSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormLoading(true);
-    let imageUrl = '';
-    try {
-      if (form.imageFile) {
-        const imageRef = ref(storage, `products/${Date.now()}_${form.imageFile.name}`);
-        await uploadBytes(imageRef, form.imageFile);
-        imageUrl = await getDownloadURL(imageRef);
-      }
-      if (editId) {
-        // Update
-        const updateData: any = {
-          name: form.name,
-          price: Number(form.price),
-          description: form.description,
-          stock: Number(form.stock),
-        };
-        if (imageUrl) updateData.imageUrl = imageUrl;
-        await updateDoc(doc(db, 'products', editId), updateData);
-        setEditId(null);
-      } else {
-        // Add
-        await addDoc(collection(db, 'products'), {
-          name: form.name,
-          price: Number(form.price),
-          description: form.description,
-          stock: Number(form.stock),
-          imageUrl,
-        });
-      }
-      setForm({ name: '', price: 0, description: '', stock: 0, imageFile: null });
-    } catch (err: any) {
-      alert('Error saving product: ' + err.message);
-    }
-    setFormLoading(false);
-  };
-
-  const handleEdit = (product: Product) => {
-    setEditId(product.id!);
-    setForm({
-      name: product.name,
-      price: product.price,
-      description: product.description,
-      stock: product.stock,
-      imageFile: null,
-    });
-  };
-
-  const handleDelete = async (id: string) => {
-    if (window.confirm('Delete this product?')) {
-      await deleteDoc(doc(db, 'products', id));
     }
   };
 

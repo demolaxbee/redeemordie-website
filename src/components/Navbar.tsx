@@ -32,7 +32,7 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   
   // Context hooks for cart and search functionality
-  const { cartItems, totalItems, formattedTotal, updateQuantity, isCartOpen, toggleCart, closeCart } = useCart();
+  const { totalItems, toggleCart } = useCart();
   const { searchQuery, setSearchQuery, setSearchResults, filterProducts, clearSearch } = useSearch();
   
   // Ref for focusing search input when opened
