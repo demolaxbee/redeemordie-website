@@ -123,6 +123,41 @@
   font-family: 'Space Mono', monospace;
 }
 
+.shipping-method-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.shipping-method-option {
+  padding: 14px 16px;
+  background-color: #000;
+  border: 1px solid #333;
+  color: #fff;
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shipping-method-option:hover {
+  border-color: #666;
+}
+
+.shipping-method-option.active {
+  background-color: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+@media (max-width: 640px) {
+  .shipping-method-options {
+    grid-template-columns: 1fr;
+  }
+}
+
 .card-element-wrapper {
   background-color: #000;
   border: 1px solid #333;

@@ -10,7 +10,16 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE_URL || 'https://redeemordie-website.onrender.com';
 
-const calculateShippingCost = (countryCode: string): number | null => {
+type ShippingMethod = 'delivery' | 'pickup';
+
+const pickupCities = new Set(['toronto', 'saskatoon']);
+
+const normalizeCity = (city: string) => city.trim().toLowerCase();
+
+const calculateShippingCost = (countryCode: string, shippingMethod: ShippingMethod): number | null => {
+  if (shippingMethod === 'pickup') {
+    return 0;
+  }
   const country = (countryCode || '').trim().toUpperCase();
   if (country === 'CA') {
     return 20;
@@ -76,11 +85,20 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [subdivision, setSubdivision] = useState('');
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('delivery');
   const hasSubdivision = !!subdivisions[form.country];
   const [shippingCost, setShippingCost] = useState<number | null>(null);
+  const cityValue = normalizeCity(form.city);
+  const isPickupAvailable = form.country === 'CA' && pickupCities.has(cityValue);
   const isShippingReady = !!form.country && (form.country !== 'CA' || subdivision.trim() !== '');
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [isPaying, setIsPaying] = useState(false);
+
+  useEffect(() => {
+    if (!isPickupAvailable && shippingMethod === 'pickup') {
+      setShippingMethod('delivery');
+    }
+  }, [isPickupAvailable, shippingMethod]);
 
   useEffect(() => {
     if (!isShippingReady) {
@@ -88,10 +106,10 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
       onShippingCostChange(null);
       return;
     }
-    const calculatedCost = calculateShippingCost(form.country);
+    const calculatedCost = calculateShippingCost(form.country, shippingMethod);
     setShippingCost(calculatedCost);
     onShippingCostChange(calculatedCost);
-  }, [form.country, subdivision, isShippingReady, onShippingCostChange]);
+  }, [form.country, subdivision, shippingMethod, isShippingReady, onShippingCostChange]);
 
   // Real order summary from cart context with new pricing structure
   const orderSummary = {
@@ -146,6 +164,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
           items: itemsForMetadata,
           shippingCountry: form.country,
           shippingRegion: subdivision,
+          shippingMethod,
           shippingCost: shippingCost ?? 0,
           taxAmount,
           subtotal: orderSummary.subtotal,
@@ -247,6 +266,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
           email: form.email,
           phone: form.phone,
           address: `${form.address}, ${form.city}, ${subdivision ? subdivision + ', ' : ''}${form.country}, ${form.postal}`,
+          shipping_method: shippingMethod,
           order: orderLineItems,
           total: orderSummary.total,
           ...(shippingCost !== null ? { shipping_cost: shippingCost } : {}),
@@ -275,6 +295,24 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
       <input name="name" type="text" placeholder="Full Name" value={form.name} onChange={handleChange} required />
       <input name="address" type="text" placeholder="Address" value={form.address} onChange={handleChange} required />
       <input name="city" type="text" placeholder="City" value={form.city} onChange={handleChange} required />
+      {isPickupAvailable && (
+        <div className="shipping-method-options" role="radiogroup" aria-label="Delivery method">
+          <button
+            type="button"
+            className={`shipping-method-option ${shippingMethod === 'delivery' ? 'active' : ''}`}
+            onClick={() => setShippingMethod('delivery')}
+          >
+            Delivery
+          </button>
+          <button
+            type="button"
+            className={`shipping-method-option ${shippingMethod === 'pickup' ? 'active' : ''}`}
+            onClick={() => setShippingMethod('pickup')}
+          >
+            Pickup in {form.city || 'Toronto / Saskatoon'}
+          </button>
+        </div>
+      )}
       <select
         name="country"
         value={form.country}
@@ -413,6 +451,8 @@ const Checkout: React.FC = () => {
                     <span>Shipping:</span>
                     {shippingCost === null ? (
                       <span>Calculated at checkout</span>
+                    ) : shippingCost === 0 ? (
+                      <span>Free pickup</span>
                     ) : (
                       <PriceDisplay 
                         price={shippingCost} 
@@ -432,6 +472,11 @@ const Checkout: React.FC = () => {
                   {!isShippingReady && (
                     <div className="currency-note">
                       <p>Total will update after shipping is calculated</p>
+                    </div>
+                  )}
+                  {shippingCost === 0 && isShippingReady && (
+                    <div className="currency-note">
+                      <p>Pickup selected. No delivery fee will be charged.</p>
                     </div>
                   )}
                   {currencyCode !== 'CAD' && (

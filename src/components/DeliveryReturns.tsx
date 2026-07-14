@@ -8,6 +8,7 @@ const DeliveryReturns: React.FC = () => {
 
       <h2>Delivery Policy</h2>
       <p>We currently deliver locally within Saskatoon and internationally.</p>
+      <p><strong>Pickup option:</strong> Pickup is available for orders placed in Toronto and Saskatoon at no delivery fee.</p>
       <p><strong>Estimated delivery time:</strong> 7 to 14 business days from the date of order confirmation.</p>
       
       <p><strong>Please note:</strong> Delays may occur due to customs, courier issues, or other unforeseen circumstances. We will do our best to keep you updated.</p>
