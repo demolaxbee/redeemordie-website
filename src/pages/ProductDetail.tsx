@@ -6,7 +6,6 @@ import { useCurrency } from '../context/CurrencyContext';
 import { formatPrice } from '../utils/formatPrice';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import Slider from 'react-slick';
 import '../styles/product-detail.css';
 import { toast } from 'react-toastify';
 

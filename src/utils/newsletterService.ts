@@ -27,7 +27,7 @@ export const subscribeToNewsletter = async (subscriber: NewsletterSubscriber): P
     // Check if we got HTML instead of JSON (error page)
     const contentType = response.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
-      const text = await response.text();
+      await response.text();
       throw new Error('Server returned an invalid response. Please check if the backend server is running.');
     }
 

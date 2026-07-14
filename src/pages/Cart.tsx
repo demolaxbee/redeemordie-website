@@ -38,14 +38,7 @@ const Cart: React.FC = () => {
     cartItems, 
     updateQuantity, 
     removeFromCart, 
-    subtotalCAD,
-    taxCAD,
-    shippingCAD,
-    totalPriceCAD, 
     formattedSubtotal,
-    formattedTax,
-    formattedShipping,
-    formattedTotal 
   } = useCart();
   const { currencyCode } = useCurrency();
   const [orderNote, setOrderNote] = useState('');

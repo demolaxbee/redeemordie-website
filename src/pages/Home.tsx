@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { subscribeToNewsletter } from '../utils/newsletterService';
-import backgroundImage from './background.png';
 // import { sendNewsletterEmail } from '../utils/emailService';
 
 const Home: React.FC = () => {

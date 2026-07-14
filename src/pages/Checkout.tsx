@@ -10,7 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const BACKEND_URL = process.env.REACT_APP_API_BASE_URL || 'https://redeemordie-website.onrender.com';
 
-const calculateShippingCost = (countryCode: string, province: string): number | null => {
+const calculateShippingCost = (countryCode: string): number | null => {
   const country = (countryCode || '').trim().toUpperCase();
   if (country === 'CA') {
     return 20;
@@ -64,7 +64,6 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
     subtotalCAD,
     clearCart
   } = useCart();
-  const { currencyCode } = useCurrency();
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -89,7 +88,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ onShippingCostChange }) => 
       onShippingCostChange(null);
       return;
     }
-    const calculatedCost = calculateShippingCost(form.country, subdivision);
+    const calculatedCost = calculateShippingCost(form.country);
     setShippingCost(calculatedCost);
     onShippingCostChange(calculatedCost);
   }, [form.country, subdivision, isShippingReady, onShippingCostChange]);
