@@ -48,7 +48,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
   const { currencyCode } = useCurrency();
   
   // Local state for formatted price (updates when currency changes)
-  const [formattedPrice, setFormattedPrice] = useState(`C$${product.price.toFixed(2)}`);
+  // Commented out because price display is temporarily removed from the product card.
+  // const [formattedPrice, setFormattedPrice] = useState(`C$${product.price.toFixed(2)}`);
 
   const totalStock = Object.values(product.stock || EMPTY_STOCK).reduce(
     (sum, qty) => sum + (qty || 0),
@@ -60,6 +61,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
    * Update formatted price when currency or product price changes
    * Handles currency conversion and formatting
    */
+  /*
   useEffect(() => {
     const updatePrice = async () => {
       try {
@@ -74,6 +76,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
 
     updatePrice();
   }, [product.price, currencyCode]);
+  */
 
   // Return null for admin mode (admin functionality handled elsewhere)
   if (isAdmin) {

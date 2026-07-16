@@ -71,14 +71,14 @@ const Home: React.FC = () => {
             />
           </motion.h1>
           
-          <motion.p
+          {/* <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="tagline"
           >
             Where Style Meets Street
-          </motion.p>
+          </motion.p> */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
