@@ -59,9 +59,9 @@
   align-items: center;
 }
 
-.navbar-logo-img {
+/* .navbar-logo-img {
   filter: invert(1);
-}
+} */
 
 .navbar-main-links {
   display: flex;

@@ -128,7 +128,8 @@ const Navbar: React.FC = () => {
         <div className="navbar-left">
           <Link to="/" className="navbar-logo">
             <img
-              src="/label-tag.png"
+              // src="/label-tag.png"
+              src="/redeemOrDie-logo.PNG"
               alt="RedeemOrDie Label"
               className="navbar-logo-img"
               style={{ height: '40px', width: 'auto' }}
