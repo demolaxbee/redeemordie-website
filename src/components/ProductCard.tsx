@@ -131,7 +131,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
         {/* Product information section */}
         <div className="product-info">
           {/* <h2 className={`product-title ${isOutOfStock ? 'opacity-70' : ''}`}>{product.name}</h2> */}
-          <p className={`product-price ${isOutOfStock ? 'opacity-70' : ''}`}>{formattedPrice}</p>
+          {/* <p className={`product-price ${isOutOfStock ? 'opacity-70' : ''}`}>{formattedPrice}</p> */}
         </div>
       </Link>
       
