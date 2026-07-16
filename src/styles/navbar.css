@@ -55,6 +55,12 @@
   color: #fff;
   letter-spacing: 1px;
   font-family: 'Space Mono', monospace;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo-img {
+  filter: invert(1);
 }
 
 .navbar-main-links {
