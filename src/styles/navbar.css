@@ -64,7 +64,6 @@
 }
 
 .navbar-logo-img {
-  filter: invert(1);
   display: block;
   width: 100%;
   height: auto;
@@ -473,11 +472,6 @@
 
 /* Responsive styles */
 @media (max-width: 768px) {
-  .navbar .navbar-logo-img {
-    -webkit-filter: invert(1) !important;
-    filter: invert(1) !important;
-  }
-
   .navbar-main-links {
     display: none;
   }
