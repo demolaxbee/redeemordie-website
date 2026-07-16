@@ -66,7 +66,7 @@ const Home: React.FC = () => {
             <img
               src="/redeemOrDie-logo.PNG"
               alt="RedeemOrDie Logo"
-              className="navbar-logo-img"
+              // className="navbar-logo-img"
               style={{ height: '200px', width: 'auto' }}
             />
           </motion.h1>
