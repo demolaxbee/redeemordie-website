@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect } from 'react';
 import { Product, EMPTY_STOCK } from '../utils/airtable';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
-import { formatPrice } from '../utils/formatPrice';
+// import { formatPrice } from '../utils/formatPrice';
 
 /**
  * Props interface for ProductCard component
@@ -45,7 +45,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   // Cart context for adding items
   const { addToCart } = useCart();
   // Currency context for price formatting
-  const { currencyCode } = useCurrency();
+  // const { currencyCode } = useCurrency();
   
   // Local state for formatted price (updates when currency changes)
   // Commented out because price display is temporarily removed from the product card.
