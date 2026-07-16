@@ -91,7 +91,7 @@ const Home: React.FC = () => {
           </motion.div>
         </motion.div>
 
-        {/* Newsletter signup */}
+        {/* Newsletter signupp*/}
         <motion.div 
           className="newsletter-container glass"
           initial={{ opacity: 0, y: 20 }}
