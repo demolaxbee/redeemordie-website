@@ -2,7 +2,7 @@
 import { Product, EMPTY_STOCK } from '../utils/airtable';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useCurrency } from '../context/CurrencyContext';
+// import { useCurrency } from '../context/CurrencyContext';
 // import { formatPrice } from '../utils/formatPrice';
 
 /**
