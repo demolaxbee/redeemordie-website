@@ -131,11 +131,12 @@ const ProductCard: React.FC<ProductCardProps> = ({
           )}
         </div>
         
-        {/* Product information section */}
+        {/* Product information section (temporarily hidden so only the image appears)
         <div className="product-info">
-          {/* <h2 className={`product-title ${isOutOfStock ? 'opacity-70' : ''}`}>{product.name}</h2> */}
-          {/* <p className={`product-price ${isOutOfStock ? 'opacity-70' : ''}`}>{formattedPrice}</p> */}
+          <h2 className={`product-title ${isOutOfStock ? 'opacity-70' : ''}`}>{product.name}</h2>
+          <p className={`product-price ${isOutOfStock ? 'opacity-70' : ''}`}>{formattedPrice}</p>
         </div>
+        */}
       </Link>
       
       {/* Add to cart button - conditionally rendered */}
