@@ -366,19 +366,19 @@
   text-decoration: none;
   cursor: pointer;
   transition: all var(--transition-normal);
-  box-shadow: 0 10px 30px rgba(255, 45, 45, 0.28), var(--shadow-sm);
+  box-shadow: 0 10px 30px rgba(255, 0, 0, 0.9), var(--shadow-sm);
 }
 
 .shop-now-btn:hover {
-  transform: translateY(-3px) scale(1.02);
-  background: linear-gradient(135deg, #ff2d2d, #ff4d4d);
-  border-color: rgba(255, 45, 45, 0.9);
-  box-shadow: 0 14px 36px rgba(255, 45, 45, 0.36), var(--shadow-lg);
-  color: var(--color-primary);
+   transform: translateY(-3px) scale(1.02);
+   background: transparent; /* Keep background transparent on hover */
+   border-color: rgba(255, 0, 0, 0.9); /* Change border to red */
+   box-shadow: 0 14px 36px rgba(255, 0, 0, 0.9), var(--shadow-lg);
+   color: var(--color-primary);
 }
 
 .shop-now-btn:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline: 2px solid rgba(255, 0, 0, 0.9);
   outline-offset: 3px;
 }
 
