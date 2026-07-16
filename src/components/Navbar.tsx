@@ -131,6 +131,7 @@ const Navbar: React.FC = () => {
               src="/redeemOrDie-logo.PNG"
               alt="RedeemOrDie Label"
               className="navbar-logo-img"
+              style={{ height: '200px', width: 'auto' }}
               // style={{ filter: 'invert(1)', WebkitFilter: 'invert(1)' }}
             />
           </Link>
