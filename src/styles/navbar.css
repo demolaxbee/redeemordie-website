@@ -57,11 +57,19 @@
   font-family: 'Space Mono', monospace;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 180px;
+  height: 55px;
+  overflow: hidden;
 }
 
-/* .navbar-logo-img {
+.navbar-logo-img {
   filter: invert(1);
-} */
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: scale(1.45);
+}
 
 .navbar-main-links {
   display: flex;
@@ -500,4 +508,4 @@
   .cart-sidebar {
     max-width: 280px;
   }
-} 
+}

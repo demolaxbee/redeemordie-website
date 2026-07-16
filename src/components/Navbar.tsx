@@ -131,7 +131,6 @@ const Navbar: React.FC = () => {
               src="/label-tag.png"
               alt="RedeemOrDie Label"
               className="navbar-logo-img"
-              style={{ height: '40px', width: 'auto' }}
             />
           </Link>
           {/* Main navigation links - only visible on desktop */}
