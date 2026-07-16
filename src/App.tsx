@@ -6,6 +6,7 @@ import './styles/footer.css';
 import './styles/shop.css';
 import './styles/admin.css';
 import './styles/thank-you.css';
+import './styles/home.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

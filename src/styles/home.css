@@ -335,6 +335,34 @@
   border: 1px solid rgba(255, 68, 68, 0.3);
 }
 
+.shop-now-container {
+  margin-top: var(--spacing-md);
+  display: flex;
+  justify-content: center;
+}
+
+.shop-now-btn {
+  display: inline-block;
+  padding: 12px 28px;
+  background: linear-gradient(45deg, var(--color-accent), var(--color-accent-hover));
+  color: var(--color-primary);
+  border-radius: var(--border-radius-md);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  font-family: var(--font-primary);
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.shop-now-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
 @media (max-width: 768px) {
   .home-content {
     padding: var(--spacing-lg);

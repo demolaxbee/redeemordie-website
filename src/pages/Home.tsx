@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { subscribeToNewsletter } from '../utils/newsletterService';
 // import { sendNewsletterEmail } from '../utils/emailService';
 
@@ -41,17 +42,11 @@ const Home: React.FC = () => {
       {/* Full-page background image/video with overlay */}
       <div className="home-background">
         <div className="overlay"></div>
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          className="background-video"
-          poster="/fallback-image.jpg"
-        >
-          <source src="/new-background-video.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        <img
+          src="/rmd-timi.png"
+          alt="Hero"
+          className="background-image"
+        />
       </div>
 
       {/* Central content */}
@@ -84,6 +79,16 @@ const Home: React.FC = () => {
           >
             Where Style Meets Street
           </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="shop-now-container"
+          >
+            <Link to="/shop" className="shop-now-btn">
+              SHOP NOW
+            </Link>
+          </motion.div>
         </motion.div>
 
         {/* Newsletter signup */}
