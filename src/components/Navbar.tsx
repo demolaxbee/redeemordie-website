@@ -129,10 +129,8 @@ const Navbar: React.FC = () => {
           <Link to="/" className="navbar-logo">
             <img
               src="/redeemOrDie-logo.PNG"
-              alt="RedeemOrDie Label"
+              alt="RedeemOrDie Logo"
               className="navbar-logo-img"
-              style={{ height: '200px', width: 'auto' }}
-              // style={{ filter: 'invert(1)', WebkitFilter: 'invert(1)' }}
             />
           </Link>
           {/* Main navigation links - only visible on desktop */}

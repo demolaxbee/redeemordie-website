@@ -57,16 +57,12 @@
   font-family: 'Space Mono', monospace;
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 180px;
-  height: 55px;
-  overflow: hidden;
 }
 
 .navbar-logo-img {
   display: block;
-  width: 100%;
-  height: auto;
+  width: auto;
+  height: 40px;
 }
 
 .navbar-main-links {
