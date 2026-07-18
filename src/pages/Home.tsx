@@ -63,7 +63,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="home">
-      {/* Full-page background image/video with overlay */}
+      {/* Full-page background image/video with overlayyy */}
       <div className="home-background">
         <div className="overlay"></div>
         <AnimatePresence initial={false}>
