@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { subscribeToNewsletter } from '../utils/newsletterService';
@@ -10,6 +10,7 @@ const campaignImages = [
   '/233E0D2C-A37B-43BF-BD93-78FAD6D12068.JPEG',
   '/542CB16B-F69F-4E58-9BA3-6B1903C49A76.JPEG',
   '/C109E6E1-0895-45F4-8A7A-D2C249EF9B05.JPEG',
+  '/rmd-timi.png',
 ];
 
 const Home: React.FC = () => {
@@ -18,27 +19,13 @@ const Home: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
-  const [isSlideshowPaused, setIsSlideshowPaused] = useState(false);
-  const touchStartX = useRef<number | null>(null);
-
-  const showPreviousSlide = useCallback(() => {
-    setActiveSlide((current) =>
-      current === 0 ? campaignImages.length - 1 : current - 1
-    );
-  }, []);
-
-  const showNextSlide = useCallback(() => {
-    setActiveSlide((current) => (current + 1) % campaignImages.length);
-  }, []);
 
   useEffect(() => {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (isSlideshowPaused || prefersReducedMotion) return;
-
-    const interval = window.setInterval(showNextSlide, 5000);
+    const interval = window.setInterval(() => {
+      setActiveSlide((current) => (current + 1) % campaignImages.length);
+    }, 5000);
     return () => window.clearInterval(interval);
-  }, [isSlideshowPaused, showNextSlide]);
+  }, []);
 
   useEffect(() => {
     campaignImages.slice(1).forEach((src) => {
@@ -46,25 +33,6 @@ const Home: React.FC = () => {
       image.src = src;
     });
   }, []);
-
-  const handleSlideshowKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
-    if (e.key === 'ArrowLeft') showPreviousSlide();
-    if (e.key === 'ArrowRight') showNextSlide();
-  };
-
-  const handleTouchStart = (e: React.TouchEvent<HTMLElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent<HTMLElement>) => {
-    if (touchStartX.current === null) return;
-
-    const swipeDistance = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(swipeDistance) > 50) {
-      swipeDistance > 0 ? showPreviousSlide() : showNextSlide();
-    }
-    touchStartX.current = null;
-  };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -98,11 +66,18 @@ const Home: React.FC = () => {
       {/* Full-page background image/video with overlay */}
       <div className="home-background">
         <div className="overlay"></div>
-        <img
-          src="/rmd-timi.png"
-          alt="Hero"
-          className="background-image"
-        />
+        <AnimatePresence initial={false}>
+          <motion.img
+            key={campaignImages[activeSlide]}
+            src={campaignImages[activeSlide]}
+            alt=""
+            className="background-image"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: 'easeInOut' }}
+          />
+        </AnimatePresence>
       </div>
 
       {/* Central content */}
@@ -146,82 +121,6 @@ const Home: React.FC = () => {
             </Link>
           </motion.div>
         </motion.div>
-
-        <motion.section
-          className="campaign-slideshow"
-          aria-label="Redeem Or Die campaign gallery"
-          aria-roledescription="carousel"
-          tabIndex={0}
-          onKeyDown={handleSlideshowKeyDown}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          onMouseEnter={() => setIsSlideshowPaused(true)}
-          onMouseLeave={() => setIsSlideshowPaused(false)}
-          onFocus={() => setIsSlideshowPaused(true)}
-          onBlur={(e) => {
-            if (!e.currentTarget.contains(e.relatedTarget)) {
-              setIsSlideshowPaused(false);
-            }
-          }}
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-        >
-          <div className="campaign-slideshow-frame">
-            <div
-              className="campaign-slide-backdrop"
-              style={{ backgroundImage: `url(${campaignImages[activeSlide]})` }}
-              aria-hidden="true"
-            />
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.img
-                key={campaignImages[activeSlide]}
-                src={campaignImages[activeSlide]}
-                alt={`Redeem Or Die campaign look ${activeSlide + 1} of ${campaignImages.length}`}
-                className="campaign-slide-image"
-                initial={{ opacity: 0, scale: 1.015 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.45 }}
-                draggable="false"
-              />
-            </AnimatePresence>
-
-            <button
-              type="button"
-              className="campaign-arrow campaign-arrow-previous"
-              onClick={showPreviousSlide}
-              aria-label="Show previous campaign photo"
-            >
-              &#8249;
-            </button>
-            <button
-              type="button"
-              className="campaign-arrow campaign-arrow-next"
-              onClick={showNextSlide}
-              aria-label="Show next campaign photo"
-            >
-              &#8250;
-            </button>
-
-            <div className="campaign-slide-count" aria-live="polite">
-              {String(activeSlide + 1).padStart(2, '0')} / {String(campaignImages.length).padStart(2, '0')}
-            </div>
-          </div>
-
-          <div className="campaign-dots" aria-label="Choose a campaign photo">
-            {campaignImages.map((image, index) => (
-              <button
-                type="button"
-                key={image}
-                className={`campaign-dot${index === activeSlide ? ' active' : ''}`}
-                onClick={() => setActiveSlide(index)}
-                aria-label={`Show campaign photo ${index + 1}`}
-                aria-current={index === activeSlide ? 'true' : undefined}
-              />
-            ))}
-          </div>
-        </motion.section>
 
         {/* Newsletter signupp*/}
         <motion.div 
