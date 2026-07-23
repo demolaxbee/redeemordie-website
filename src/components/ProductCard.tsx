@@ -1,5 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+// import React, { useState, useEffect } from 'react';
 import { Product, EMPTY_STOCK } from '../utils/airtable';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -21,26 +20,6 @@ interface ProductCardProps {
   /** Whether to show the "Add to Cart" button */
   showAddToCart?: boolean;
 }
-
-const productCardPhotos = [
-  '/product-card-photos/IMG_8342.JPG',
-  '/product-card-photos/IMG_8343.JPG',
-  '/product-card-photos/IMG_8344.JPG',
-  '/product-card-photos/IMG_8345.JPG',
-  '/product-card-photos/IMG_8351.JPG',
-  '/product-card-photos/IMG_8352.JPG',
-  '/product-card-photos/IMG_8353.JPG',
-  '/product-card-photos/IMG_8354.JPG',
-  '/product-card-photos/IMG_8355.JPG',
-  '/product-card-photos/IMG_8361.JPG',
-  '/product-card-photos/_IMG9366.JPG',
-  '/product-card-photos/_IMG9381.JPG',
-  '/product-card-photos/_IMG9398.JPG',
-  '/product-card-photos/_IMG9461.JPG',
-  '/product-card-photos/_IMG9465.JPG',
-  '/product-card-photos/_IMG9468.JPG',
-  '/product-card-photos/_IMG9470.JPG',
-];
 
 /**
  * ProductCard Component
@@ -65,32 +44,6 @@ const ProductCard: React.FC<ProductCardProps> = ({
 }) => {
   // Cart context for adding items
   const { addToCart } = useCart();
-  const initialSlide = useMemo(
-    () =>
-      Array.from(product.id).reduce(
-        (total, character) => total + character.charCodeAt(0),
-        0
-      ) % productCardPhotos.length,
-    [product.id]
-  );
-  const [activeSlide, setActiveSlide] = useState(initialSlide);
-
-  useEffect(() => {
-    setActiveSlide(initialSlide);
-
-    const interval = window.setInterval(() => {
-      setActiveSlide((current) => (current + 1) % productCardPhotos.length);
-    }, 5000);
-
-    return () => window.clearInterval(interval);
-  }, [initialSlide]);
-
-  useEffect(() => {
-    const nextImage = new Image();
-    nextImage.src =
-      productCardPhotos[(activeSlide + 1) % productCardPhotos.length];
-  }, [activeSlide]);
-
   // Currency context for price formatting
   // const { currencyCode } = useCurrency();
   
@@ -161,18 +114,11 @@ const ProductCard: React.FC<ProductCardProps> = ({
       >
         {/* Product image container with relative positioning */}
         <div className="product-image relative">
-          <AnimatePresence initial={false}>
-            <motion.img
-              key={productCardPhotos[activeSlide]}
-              src={productCardPhotos[activeSlide]}
-              alt={`${product.name} campaign`}
-              className={`product-img product-card-slide ${isOutOfStock ? 'opacity-50' : ''}`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: 'easeInOut' }}
-            />
-          </AnimatePresence>
+          <img
+            src={product.imageUrls[0] || '/placeholder-image.jpg'}
+            alt={product.name}
+            className={`product-img ${isOutOfStock ? 'opacity-50' : ''}`}
+          />
           
           {/* Out of stock overlay - only shown when product is unavailable */}
           {isOutOfStock && (
