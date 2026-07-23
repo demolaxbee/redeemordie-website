@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { fetchProducts, Product, ProductStock, EMPTY_STOCK } from '../utils/airtable';
 import { useCart } from '../context/CartContext';
@@ -8,6 +9,26 @@ import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import '../styles/product-detail.css';
 import { toast } from 'react-toastify';
+
+const productDetailPhotos = [
+  '/product-detail-photos/IMG_8342.JPG',
+  '/product-detail-photos/IMG_8343.JPG',
+  '/product-detail-photos/IMG_8344.JPG',
+  '/product-detail-photos/IMG_8345.JPG',
+  '/product-detail-photos/IMG_8351.JPG',
+  '/product-detail-photos/IMG_8352.JPG',
+  '/product-detail-photos/IMG_8353.JPG',
+  '/product-detail-photos/IMG_8354.JPG',
+  '/product-detail-photos/IMG_8355.JPG',
+  '/product-detail-photos/IMG_8361.JPG',
+  '/product-detail-photos/_IMG9366.JPG',
+  '/product-detail-photos/_IMG9381.JPG',
+  '/product-detail-photos/_IMG9398.JPG',
+  '/product-detail-photos/_IMG9461.JPG',
+  '/product-detail-photos/_IMG9465.JPG',
+  '/product-detail-photos/_IMG9468.JPG',
+  '/product-detail-photos/_IMG9470.JPG',
+];
 
 interface PriceDisplayProps {
   price: number;
@@ -48,6 +69,25 @@ const ProductDetail: React.FC = () => {
   const { addToCart } = useCart();
   const { currencyCode } = useCurrency();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [activeBackgroundSlide, setActiveBackgroundSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setActiveBackgroundSlide(
+        (current) => (current + 1) % productDetailPhotos.length
+      );
+    }, 5000);
+
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const nextImage = new Image();
+    nextImage.src =
+      productDetailPhotos[
+        (activeBackgroundSlide + 1) % productDetailPhotos.length
+      ];
+  }, [activeBackgroundSlide]);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -117,6 +157,22 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="product-detail">
+      <div className="product-detail-background" aria-hidden="true">
+        <div className="product-detail-background-overlay" />
+        <AnimatePresence initial={false}>
+          <motion.img
+            key={productDetailPhotos[activeBackgroundSlide]}
+            src={productDetailPhotos[activeBackgroundSlide]}
+            alt=""
+            className="product-detail-background-image"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2, ease: 'easeInOut' }}
+          />
+        </AnimatePresence>
+      </div>
+
       <div className="breadcrumb">
         <button onClick={() => navigate(-1)}>&larr; Back to Shop</button>
       </div>
