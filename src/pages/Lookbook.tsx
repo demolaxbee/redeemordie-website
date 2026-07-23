@@ -103,8 +103,8 @@ const Lookbook: React.FC = () => {
       </section>
 
       <section className="lookbook-intro" aria-labelledby="lookbook-heading">
-        <p>R / D — 001</p>
-        <h2 id="lookbook-heading">Built for the saints<br />.</h2>
+        <p>RMD — 001</p>
+        <h2 id="lookbook-heading">Built for the saints.<br /></h2>
         <span>Summer 2026</span>
       </section>
 
