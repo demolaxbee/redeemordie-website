@@ -136,6 +136,7 @@ const Navbar: React.FC = () => {
           {/* Main navigation links - only visible on desktop */}
           <div className="navbar-main-links">
             <Link to="/shop" className={location.pathname === '/shop' ? 'active' : ''}>SHOP</Link>
+            <Link to="/summer-2026" className={location.pathname === '/summer-2026' ? 'active' : ''}>SUMMER 2026</Link>
             <Link to="/contact" className={location.pathname === '/contact' ? 'active' : ''}>Contact</Link>
           </div>
         </div>
@@ -184,6 +185,7 @@ const Navbar: React.FC = () => {
             transition={{ duration: 0.3 }}
           >
             <Link to="/shop" onClick={() => setIsMobileMenuOpen(false)}>SHOP</Link>
+            <Link to="/summer-2026" onClick={() => setIsMobileMenuOpen(false)}>SUMMER 2026</Link>
             <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
             <Link to="/cart" onClick={() => setIsMobileMenuOpen(false)}>Cart ({totalItems})</Link>
           </motion.div>

@@ -21,6 +21,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import Checkout from './pages/Checkout';
 import ThankYou from './pages/ThankYou';
+import Lookbook from './pages/Lookbook';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import DeliveryReturns from './components/DeliveryReturns';
 
@@ -67,6 +68,7 @@ const App: React.FC = () => {
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/thank-you" element={<ThankYou />} />
+                  <Route path="/summer-2026" element={<Lookbook />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/delivery-returns" element={<DeliveryReturns />} />
                   <Route path="/admin" element={<AdminLogin />} />
