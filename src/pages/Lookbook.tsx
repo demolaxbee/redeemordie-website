@@ -186,8 +186,8 @@ const Lookbook: React.FC = () => {
               ←
             </button>
             <motion.img
-              key={lookbookPhotos[selectedIndex].original}
-              src={lookbookPhotos[selectedIndex].original}
+              key={lookbookPhotos[selectedIndex].display}
+              src={lookbookPhotos[selectedIndex].display}
               alt={`Summer 2026 look ${selectedIndex + 1}`}
               initial={{ opacity: 0, scale: 0.985 }}
               animate={{ opacity: 1, scale: 1 }}

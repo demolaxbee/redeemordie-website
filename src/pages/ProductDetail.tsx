@@ -11,12 +11,12 @@ import '../styles/product-detail.css';
 import { toast } from 'react-toastify';
 
 const productDetailPhotos = [
-  '/product-detail-photos/IMG_8342.JPG',
+  // '/product-detail-photos/IMG_8342.JPG',
   '/product-detail-photos/IMG_8343.JPG',
   '/product-detail-photos/IMG_8344.JPG',
   '/product-detail-photos/IMG_8345.JPG',
-  '/product-detail-photos/IMG_8351.JPG',
-  '/product-detail-photos/IMG_8352.JPG',
+  // '/product-detail-photos/IMG_8351.JPG',
+  // '/product-detail-photos/IMG_8352.JPG',
   '/product-detail-photos/IMG_8353.JPG',
   '/product-detail-photos/IMG_8354.JPG',
   '/product-detail-photos/IMG_8355.JPG',
@@ -76,7 +76,7 @@ const ProductDetail: React.FC = () => {
       setActiveBackgroundSlide(
         (current) => (current + 1) % productDetailPhotos.length
       );
-    }, 5000);
+    }, 2500);
 
     return () => window.clearInterval(interval);
   }, []);
