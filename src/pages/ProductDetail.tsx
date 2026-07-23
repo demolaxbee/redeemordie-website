@@ -294,10 +294,10 @@ const ProductDetail: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <div className="product-info">
+                {/* <div className="product-info">
                   <div className={`related-name ${itemOutOfStock ? 'opacity-70' : ''}`}>{item.name}</div>
                   <PriceDisplay price={item.price} currencyCode={currencyCode} className={`related-price ${itemOutOfStock ? 'opacity-70' : ''}`} />
-                </div>
+                </div> */}
               </Link>
             );
           })}

@@ -104,7 +104,7 @@ const Lookbook: React.FC = () => {
 
       <section className="lookbook-intro" aria-labelledby="lookbook-heading">
         <p>R / D — 001</p>
-        <h2 id="lookbook-heading">Built for the hours<br />that never make the schedule.</h2>
+        <h2 id="lookbook-heading">Built for the saints<br />.</h2>
         <span>Summer 2026</span>
       </section>
 

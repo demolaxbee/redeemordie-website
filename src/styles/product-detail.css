@@ -290,7 +290,7 @@
   text-align: center;
   display: flex;
   flex-direction: column;
-  height: 280px;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
 }
 
@@ -306,7 +306,7 @@
   justify-content: center;
   overflow: hidden;
   background-color: #0a0a0a;
-  min-height: 200px;
+  min-height: 0;
 }
 
 .related-item img {
@@ -367,11 +367,11 @@
   }
 
   .related-item {
-    height: 240px;
+    aspect-ratio: 4 / 5;
   }
 
   .related-item .image-container {
-    min-height: 160px;
+    min-height: 0;
   }
 }
 
